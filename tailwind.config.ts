@@ -146,5 +146,26 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("daisyui")],
+  daisyui: {
+    themes: [
+      {
+        "sci-fi-dark": {
+          "primary": "#00d4ff", // arc-reactor blue
+          "secondary": "#ffd700", // mystic gold
+          "accent": "#00d4ff",
+          "neutral": "#1a1a1a", // deep charcoal
+          "base-100": "#0a0a0a", // deep black
+          "base-200": "#1a1a1a",
+          "base-300": "#2a2a2a",
+          "base-content": "#ffffff",
+          "info": "#00d4ff",
+          "success": "#00ff88",
+          "warning": "#ffd700",
+          "error": "#ff4444",
+        },
+      },
+    ],
+    darkTheme: "sci-fi-dark",
+  },
 } satisfies Config;

@@ -22,24 +22,16 @@ const ContactLink = ({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex items-center gap-4 p-4 border border-steel/30 rounded-sm hover:border-neon-cyan/50 transition-all duration-300"
+      className="btn btn-outline btn-lg gap-4 justify-start"
       initial={{ opacity: 0, x: -20 }}
       animate={isInView ? { opacity: 1, x: 0 } : {}}
       transition={{ duration: 0.5, delay }}
       whileHover={{ x: 8 }}
     >
-      <div className="w-12 h-12 flex items-center justify-center border border-neon-cyan/30 rounded-sm group-hover:border-neon-cyan/60 group-hover:bg-neon-cyan/10 transition-all duration-300">
-        <Icon className="w-5 h-5 text-neon-cyan" />
-      </div>
-      <span className="font-mono text-sm text-foreground group-hover:text-neon-cyan transition-colors">
+      <Icon className="w-5 h-5" />
+      <span>
         {label}
       </span>
-      <motion.div
-        className="ml-auto w-8 h-px bg-neon-cyan/50 opacity-0 group-hover:opacity-100 transition-opacity"
-        initial={{ scaleX: 0 }}
-        whileHover={{ scaleX: 1 }}
-        style={{ transformOrigin: 'left' }}
-      />
     </motion.a>
   );
 };
@@ -49,7 +41,7 @@ export const ContactSection = () => {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   return (
-    <section id="contact" ref={sectionRef} className="relative py-32 px-6">
+    <section id="contact" ref={sectionRef} className="section relative py-32 px-6">
       <div className="max-w-4xl mx-auto">
         {/* Section header */}
         <motion.div

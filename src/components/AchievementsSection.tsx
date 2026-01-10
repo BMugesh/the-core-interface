@@ -95,7 +95,7 @@ export const AchievementsSection = () => {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   return (
-    <section id="achievements" ref={sectionRef} className="relative py-32 px-6">
+    <section id="achievements" ref={sectionRef} className="section relative py-32 px-6">
       <div className="max-w-4xl mx-auto">
         {/* Section header */}
         <motion.div

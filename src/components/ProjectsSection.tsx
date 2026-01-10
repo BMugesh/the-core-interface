@@ -1,5 +1,6 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef, useState } from 'react';
+import { useFadeReveal } from '@/hooks/use-text-reveal';
 
 interface Project {
   id: string;
@@ -44,6 +45,10 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
   const [isHovered, setIsHovered] = useState(false);
+  const purposeRef = useRef<HTMLParagraphElement>(null);
+
+  // Apply fade reveal to project purpose
+  useFadeReveal(purposeRef);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -66,7 +71,7 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
       onMouseLeave={() => setIsHovered(false)}
     >
       <motion.div
-        className="float-card p-6 rounded-lg relative overflow-hidden"
+        className="card bg-base-100 shadow-xl p-6 relative overflow-hidden"
         animate={{
           y: isHovered ? -8 : 0,
           rotateY: isHovered ? 2 : 0,
@@ -131,7 +136,11 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
         </div>
 
         {/* Purpose / Diagnostics */}
-        <p className="font-mono text-sm text-muted-foreground mb-6 leading-relaxed">
+        <p 
+          ref={purposeRef}
+          className="font-mono text-sm text-muted-foreground mb-6 leading-relaxed"
+          data-fade-reveal
+        >
           {project.purpose}
         </p>
 
@@ -197,7 +206,7 @@ export const ProjectsSection = () => {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   return (
-    <section id="projects" ref={sectionRef} className="relative py-32 px-6">
+    <section id="projects" ref={sectionRef} className="section relative py-32 px-6">
       <div className="max-w-6xl mx-auto">
         {/* Section header */}
         <motion.div

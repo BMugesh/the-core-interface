@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
+import { useLineReveal } from '@/hooks/use-text-reveal';
 
 const DataLine = ({ children, delay }: { children: string; delay: number }) => {
   const ref = useRef(null);
@@ -31,9 +32,13 @@ const DataLine = ({ children, delay }: { children: string; delay: number }) => {
 export const AboutSection = () => {
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Apply line reveal animation to data lines
+  useLineReveal(contentRef);
 
   return (
-    <section id="about" ref={sectionRef} className="relative py-32 px-6">
+    <section id="about" ref={sectionRef} className="section relative py-32 px-6">
       <div className="max-w-4xl mx-auto">
         {/* Section header */}
         <motion.div
@@ -98,7 +103,7 @@ export const AboutSection = () => {
             </motion.div>
 
             {/* Data lines */}
-            <div className="space-y-4">
+            <div className="space-y-4" ref={contentRef} data-reveal-lines>
               <DataLine delay={0.4}>
                 I design systems where interface, logic, and intelligence converge.
               </DataLine>

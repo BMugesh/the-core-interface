@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { LoadingSequence } from '@/components/LoadingSequence';
 import { ParticleBackground } from '@/components/ParticleBackground';
 import { HUDNavigation } from '@/components/HUDNavigation';
@@ -9,9 +11,18 @@ import { SkillsSection } from '@/components/SkillsSection';
 import { ProjectsSection } from '@/components/ProjectsSection';
 import { AchievementsSection } from '@/components/AchievementsSection';
 import { ContactSection } from '@/components/ContactSection';
+import { SectionInterconnections } from '@/components/SectionInterconnections';
+import { useCinematicScroll } from '@/hooks/use-cinematic-scroll';
+import { usePerformanceMonitor } from '@/hooks/use-performance-monitor';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const performance = usePerformanceMonitor();
+  
+  // Initialize cinematic scroll animations with performance profile
+  useCinematicScroll(performance.profile);
 
   return (
     <div className="relative min-h-screen bg-void-deep text-foreground overflow-x-hidden">
@@ -25,6 +36,9 @@ const Index = () => {
         <>
           <ParticleBackground />
           <HUDNavigation />
+          
+          {/* Section interconnection visuals */}
+          <SectionInterconnections />
           
           <motion.main
             className="relative z-10"
