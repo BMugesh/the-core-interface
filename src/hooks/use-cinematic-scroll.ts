@@ -1,11 +1,33 @@
 import { useEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Lenis from 'lenis';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export const useCinematicScroll = (performanceProfile: 'high-end' | 'mid-range' | 'low-end' = 'high-end') => {
   useEffect(() => {
+    // Initialize Lenis for cinematic smooth scrolling
+    // "Dolly" feel: smooth damping, no hard stops
+    const lenis = new Lenis({
+      duration: 1.5,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Exponential easing for "weight"
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 0.8, // Slightly heavier feel
+      touchMultiplier: 1.5,
+    });
+
+    // Synchronize Lenis with GSAP ScrollTrigger
+    lenis.on('scroll', ScrollTrigger.update);
+
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000);
+    });
+
+    gsap.ticker.lagSmoothing(0);
+
     // IMAX Principle: Camera drift (scroll = deliberate camera movement)
     const sections = gsap.utils.toArray('.section') as Element[];
     
@@ -21,13 +43,16 @@ export const useCinematicScroll = (performanceProfile: 'high-end' | 'mid-range' 
           const velocity = self.getVelocity();
           const twist = gsap.utils.clamp(-2, 2, velocity * 0.0001);
           
-          // Only apply on high-end devices
+          // Only apply on high-end devices and if target exists
           if (performanceProfile === 'high-end') {
-            gsap.to('.section-parallax-layer', {
-              rotateZ: twist,
-              overwrite: 'auto',
-              duration: 0.1,
-            });
+            const targets = document.querySelectorAll('.section-parallax-layer');
+            if (targets.length > 0) {
+              gsap.to(targets, {
+                rotateZ: twist,
+                overwrite: 'auto',
+                duration: 0.1,
+              });
+            }
           }
         },
       },

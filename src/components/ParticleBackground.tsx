@@ -42,10 +42,9 @@ export const ParticleBackground = () => {
     }
 
     const animate = () => {
-      ctx.fillStyle = 'rgba(5, 5, 10, 0.1)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      particles.forEach((p, i) => {
+      particles.forEach((p) => {
         p.x += p.vx;
         p.y += p.vy;
 
@@ -54,26 +53,11 @@ export const ParticleBackground = () => {
         if (p.y < 0) p.y = canvas.height;
         if (p.y > canvas.height) p.y = 0;
 
-        // Draw particle
+        // Draw particle (subtle dust mote)
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0, 217, 255, ${p.opacity})`;
+        ctx.fillStyle = `rgba(150, 160, 180, ${p.opacity * 0.3})`; // Reduced opacity and desaturated
         ctx.fill();
-
-        // Draw connections
-        particles.slice(i + 1).forEach(p2 => {
-          const dx = p.x - p2.x;
-          const dy = p.y - p2.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < 150) {
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = `rgba(0, 217, 255, ${0.1 * (1 - dist / 150)})`;
-            ctx.stroke();
-          }
-        });
       });
 
       requestAnimationFrame(animate);

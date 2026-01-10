@@ -7,23 +7,24 @@ const visitedSectionsKey = 'portfolio_visited_sections';
  * Returns whether section has been seen before and mark function
  */
 export const useVisitedSections = () => {
-  const visitedRef = useRef<Set<string>>(new Set());
+  const visitedRef = useRef<Set<string> | null>(null);
 
-  // Initialize from sessionStorage on mount
-  useEffect(() => {
+  // Initialize synchronously to ensure first render has correct state
+  if (!visitedRef.current) {
     const stored = sessionStorage.getItem(visitedSectionsKey);
     if (stored) {
       try {
-        const parsed = JSON.parse(stored);
-        visitedRef.current = new Set(parsed);
+        visitedRef.current = new Set(JSON.parse(stored));
       } catch {
         visitedRef.current = new Set();
       }
+    } else {
+      visitedRef.current = new Set();
     }
-  }, []);
+  }
 
   const markSectionVisited = useCallback((sectionId: string) => {
-    if (!visitedRef.current.has(sectionId)) {
+    if (visitedRef.current && !visitedRef.current.has(sectionId)) {
       visitedRef.current.add(sectionId);
       // Persist to sessionStorage
       sessionStorage.setItem(
@@ -34,7 +35,7 @@ export const useVisitedSections = () => {
   }, []);
 
   const hasVisited = useCallback((sectionId: string) => {
-    return visitedRef.current.has(sectionId);
+    return visitedRef.current ? visitedRef.current.has(sectionId) : false;
   }, []);
 
   return { markSectionVisited, hasVisited };

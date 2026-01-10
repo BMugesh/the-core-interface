@@ -44,7 +44,7 @@ const Index = () => {
             className="relative z-10"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.3 }}
+            transition={{ duration: 0.8, delay: 0 }}
           >
             <HeroSection />
             <AboutSection />

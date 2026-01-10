@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -20,7 +20,7 @@ const connections: SectionConnection[] = [
   { fromId: 'achievements', toId: 'contact', color: 'mixed', intensity: 0.8 },
 ];
 
-const EnergyBeam = ({
+const StructuralLink = ({
   from,
   to,
   color = 'cyan',
@@ -36,16 +36,11 @@ const EnergyBeam = ({
   const endX = to.left + to.width / 2;
   const endY = to.top;
 
-  const midX = (startX + endX) / 2;
-  const midY = (startY + endY) / 2;
-
-  const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
-  const angle = Math.atan2(endY - startY, endX - startX) * (180 / Math.PI);
-
+  // Technical color mapping - desaturated and precise
   const colorMap = {
-    cyan: 'hsl(190 100% 50%)',
-    amber: 'hsl(38 100% 50%)',
-    mixed: `linear-gradient(90deg, hsl(190 100% 50%), hsl(38 100% 50%))`,
+    cyan: 'rgba(0, 212, 255, 0.4)',
+    amber: 'rgba(255, 215, 0.4)',
+    mixed: 'rgba(255, 255, 255, 0.3)',
   };
 
   return (
@@ -60,262 +55,75 @@ const EnergyBeam = ({
         zIndex: 5,
       }}
     >
-      <defs>
-        <linearGradient id={`beam-gradient-${color}`} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor={color === 'cyan' ? '#00d4ff' : color === 'amber' ? '#ffd700' : '#00d4ff'} stopOpacity="0" />
-          <stop offset="50%" stopColor={color === 'cyan' ? '#00d4ff' : color === 'amber' ? '#ffd700' : '#ffd700'} stopOpacity="1" />
-          <stop offset="100%" stopColor={color === 'cyan' ? '#00d4ff' : color === 'amber' ? '#ffd700' : '#00d4ff'} stopOpacity="0" />
-        </linearGradient>
-        <filter id="beam-glow">
-          <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-          <feMerge>
-            <feMergeNode in="coloredBlur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
+      {/* Structural Line - Precise vector, no glow */}
       <motion.line
         x1={startX}
         y1={startY}
         x2={endX}
         y2={endY}
-        stroke={`url(#beam-gradient-${color})`}
-        strokeWidth="2"
-        filter="url(#beam-glow)"
+        stroke={color === 'mixed' ? 'url(#link-gradient)' : colorMap[color]}
+        strokeWidth="1"
+        strokeDasharray="4 4" 
         initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 0.6 }}
-        transition={{ duration: 1.5, ease: 'easeInOut' }}
-        style={{
-          filter: `drop-shadow(0 0 10px ${color === 'cyan' ? 'hsl(190 100% 50% / 0.5)' : 'hsl(38 100% 50% / 0.5)'})`,
-        }}
+        animate={{ pathLength: 1, opacity: 1 }}
+        transition={{ duration: 1.5, ease: 'circOut' }}
       />
+      {/* Endpoints - Technical anchors */}
+      <circle cx={startX} cy={startY} r="2" fill={colorMap[color]} />
+      <circle cx={endX} cy={endY} r="2" fill={colorMap[color]} />
+    
+      {color === 'mixed' && (
+        <defs>
+           <linearGradient id="link-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgba(0, 212, 255, 0.3)" />
+            <stop offset="100%" stopColor="rgba(255, 215, 0.3)" />
+          </linearGradient>
+        </defs>
+      )}
     </svg>
   );
 };
 
 export const SectionInterconnections = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const beamPositionsRef = useRef<Map<string, DOMRect>>(new Map());
+  const [beamPositions, setBeamPositions] = useState<Map<string, DOMRect>>(new Map());
+
+  const updatePositions = () => {
+    const newPositions = new Map<string, DOMRect>();
+    connections.forEach(({ fromId, toId }) => {
+      const fromEl = document.getElementById(fromId);
+      const toEl = document.getElementById(toId);
+
+      if (fromEl) newPositions.set(fromId, fromEl.getBoundingClientRect());
+      if (toEl) newPositions.set(toId, toEl.getBoundingClientRect());
+    });
+    setBeamPositions(newPositions);
+  };
 
   useEffect(() => {
-    const updatePositions = () => {
-      connections.forEach((conn) => {
-        const fromEl = document.getElementById(conn.fromId);
-        const toEl = document.getElementById(conn.toId);
-
-        if (fromEl && toEl) {
-          beamPositionsRef.current.set(`${conn.fromId}-${conn.toId}`, fromEl.getBoundingClientRect());
-        }
-      });
-    };
-
+    // Initial update
     updatePositions();
+    
+    // Update on scroll/resize
     window.addEventListener('scroll', updatePositions);
     window.addEventListener('resize', updatePositions);
-
+    
     return () => {
       window.removeEventListener('scroll', updatePositions);
       window.removeEventListener('resize', updatePositions);
     };
   }, []);
 
-  useEffect(() => {
-    // Animate connection strength based on scroll position
-    connections.forEach((conn) => {
-      const fromEl = document.getElementById(conn.fromId);
-      const toEl = document.getElementById(conn.toId);
-
-      if (fromEl && toEl) {
-        ScrollTrigger.create({
-          trigger: fromEl,
-          start: 'top center',
-          end: 'bottom center',
-          onUpdate: (self) => {
-            const progress = self.progress;
-            const beam = document.querySelector(`[data-beam="${conn.fromId}-${conn.toId}"]`);
-
-            if (beam) {
-              gsap.set(beam, {
-                opacity: 0.3 + progress * 0.4,
-                strokeWidth: 1 + progress * 2,
-              });
-            }
-          },
-        });
-      }
-    });
-
-    return () => {
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
-    };
-  }, []);
-
   return (
-    <div
-      ref={containerRef}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none',
-        zIndex: 5,
-      }}
-    >
-      {connections.map((conn) => {
-        const fromEl = document.getElementById(conn.fromId);
-        const toEl = document.getElementById(conn.toId);
-
-        if (!fromEl || !toEl) return null;
-
-        const from = fromEl.getBoundingClientRect();
-        const to = toEl.getBoundingClientRect();
-
-        return (
-          <motion.svg
-            key={`${conn.fromId}-${conn.toId}`}
-            data-beam={`${conn.fromId}-${conn.toId}`}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              pointerEvents: 'none',
-            }}
-          >
-            <defs>
-              <filter id={`glow-${conn.fromId}-${conn.toId}`}>
-                <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-                <feMerge>
-                  <feMergeNode in="coloredBlur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-            <motion.line
-              x1={from.left + from.width / 2}
-              y1={from.top + from.height}
-              x2={to.left + to.width / 2}
-              y2={to.top}
-              stroke={conn.color === 'cyan' ? '#00d4ff' : conn.color === 'amber' ? '#ffd700' : '#00d4ff'}
-              strokeWidth="2"
-              opacity="0.4"
-              filter={`url(#glow-${conn.fromId}-${conn.toId})`}
-              style={{
-                filter: `drop-shadow(0 0 8px ${conn.color === 'cyan' ? 'hsl(190 100% 50% / 0.5)' : 'hsl(38 100% 50% / 0.5)'})`,
-              }}
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 0.4 }}
-              transition={{ duration: 1.5, ease: 'easeInOut' }}
-            />
-          </motion.svg>
-        );
-      })}
+    <div ref={containerRef} className="fixed inset-0 pointer-events-none z-0">
+      {connections.map((conn, i) => (
+        <StructuralLink
+          key={i}
+          from={beamPositions.get(conn.fromId) || null}
+          to={beamPositions.get(conn.toId) || null}
+          color={conn.color || 'cyan'}
+        />
+      ))}
     </div>
-  );
-};
-
-/**
- * Enhanced section signal markers
- * Shows energy flow between sections
- */
-export const SectionSignal = ({ sectionId, intensity = 1 }: { sectionId: string; intensity?: number }) => {
-  return (
-    <motion.div
-      className="absolute -top-8 left-1/2 -translate-x-1/2"
-      initial={{ opacity: 0, scale: 0 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.6 }}
-    >
-      {/* Signal pulse indicator */}
-      <motion.div
-        className="relative w-3 h-3 rounded-full"
-        style={{
-          background: sectionId.includes('hero') || sectionId.includes('skills') || sectionId.includes('contact-signal') ? '#00d4ff' : '#ffd700',
-          boxShadow: `0 0 20px ${sectionId.includes('hero') || sectionId.includes('skills') || sectionId.includes('contact-signal') ? 'hsl(190 100% 50% / 0.6)' : 'hsl(38 100% 50% / 0.6)'}`,
-        }}
-        animate={{
-          scale: [1, 1.5, 1],
-          opacity: [1, 0.6, 1],
-        }}
-        transition={{
-          duration: 2 + intensity,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-      />
-    </motion.div>
-  );
-};
-
-/**
- * Holographic connection path between sections
- */
-export const HolographicPath = ({
-  fromId,
-  toId,
-  label,
-}: {
-  fromId: string;
-  toId: string;
-  label?: string;
-}) => {
-  const pathRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!pathRef.current) return;
-
-    const fromEl = document.getElementById(fromId);
-    const toEl = document.getElementById(toId);
-
-    if (!fromEl || !toEl) return;
-
-    const updatePath = () => {
-      const fromRect = fromEl.getBoundingClientRect();
-      const toRect = toEl.getBoundingClientRect();
-
-      const startX = fromRect.left + fromRect.width / 2;
-      const startY = fromRect.top + fromRect.height;
-      const endX = toRect.left + toRect.width / 2;
-      const endY = toRect.top;
-
-      const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
-      const angle = Math.atan2(endY - startY, endX - startX);
-
-      gsap.set(pathRef.current, {
-        width: distance,
-        height: 2,
-        left: startX,
-        top: startY,
-        rotation: angle * (180 / Math.PI),
-        transformOrigin: '0 50%',
-      });
-    };
-
-    updatePath();
-    window.addEventListener('scroll', updatePath);
-    window.addEventListener('resize', updatePath);
-
-    return () => {
-      window.removeEventListener('scroll', updatePath);
-      window.removeEventListener('resize', updatePath);
-    };
-  }, [fromId, toId]);
-
-  return (
-    <motion.div
-      ref={pathRef}
-      className="fixed pointer-events-none"
-      style={{
-        background: 'linear-gradient(90deg, hsl(190 100% 50% / 0.4), hsl(38 100% 50% / 0.4))',
-        boxShadow: '0 0 15px hsl(190 100% 50% / 0.3), 0 0 15px hsl(38 100% 50% / 0.3)',
-        zIndex: 5,
-      }}
-      initial={{ scaleX: 0 }}
-      whileInView={{ scaleX: 1 }}
-      transition={{ duration: 1.5, ease: 'easeInOut' }}
-    />
   );
 };
