@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LoadingSequence } from '@/components/LoadingSequence';
 import { ParticleBackground } from '@/components/ParticleBackground';
+import { HUDNavigation } from '@/components/HUDNavigation';
 import { HeroSection } from '@/components/HeroSection';
 import { AboutSection } from '@/components/AboutSection';
 import { SkillsSection } from '@/components/SkillsSection';
@@ -23,6 +24,7 @@ const Index = () => {
       {!isLoading && (
         <>
           <ParticleBackground />
+          <HUDNavigation />
           
           <motion.main
             className="relative z-10"

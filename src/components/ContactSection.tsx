@@ -26,7 +26,7 @@ const ContactLink = ({
       initial={{ opacity: 0, x: -20 }}
       animate={isInView ? { opacity: 1, x: 0 } : {}}
       transition={{ duration: 0.5, delay }}
-      whileHover={{ x: 5 }}
+      whileHover={{ x: 8 }}
     >
       <div className="w-12 h-12 flex items-center justify-center border border-neon-cyan/30 rounded-sm group-hover:border-neon-cyan/60 group-hover:bg-neon-cyan/10 transition-all duration-300">
         <Icon className="w-5 h-5 text-neon-cyan" />
@@ -49,7 +49,7 @@ export const ContactSection = () => {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   return (
-    <section ref={sectionRef} className="relative py-32 px-6">
+    <section id="contact" ref={sectionRef} className="relative py-32 px-6">
       <div className="max-w-4xl mx-auto">
         {/* Section header */}
         <motion.div
@@ -78,7 +78,7 @@ export const ContactSection = () => {
             />
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-6">
-            EXIT THE LAB
+            LEAVING THE LAB
           </h2>
           <motion.p
             className="font-mono text-lg text-hud-text max-w-xl mx-auto"
@@ -86,7 +86,7 @@ export const ContactSection = () => {
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            If you understand what you just saw, let's talk.
+            If this made sense to you, we should talk.
           </motion.p>
         </motion.div>
 
@@ -94,23 +94,35 @@ export const ContactSection = () => {
         <div className="max-w-md mx-auto space-y-4">
           <ContactLink
             icon={Mail}
-            label="hello@thelab.dev"
-            href="mailto:hello@thelab.dev"
+            label="mkbm1307@gmail.com"
+            href="mailto:mkbm1307@gmail.com"
             delay={0.5}
           />
           <ContactLink
             icon={Github}
-            label="github.com/thelab"
-            href="https://github.com"
+            label="github.com/BMugesh"
+            href="https://github.com/BMugesh"
             delay={0.6}
           />
           <ContactLink
             icon={Linkedin}
-            label="linkedin.com/in/thelab"
-            href="https://linkedin.com"
+            label="linkedin.com/in/balamugeshmk"
+            href="https://linkedin.com/in/balamugeshmk"
             delay={0.7}
           />
         </div>
+
+        {/* Access note */}
+        <motion.div
+          className="mt-12 text-center"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ delay: 0.9 }}
+        >
+          <span className="font-mono text-xs text-muted-foreground">
+            No forms. No noise. Just access.
+          </span>
+        </motion.div>
 
         {/* Footer */}
         <motion.div
@@ -122,24 +134,32 @@ export const ContactSection = () => {
           <div className="inline-flex flex-col items-center gap-4">
             {/* Lab seal */}
             <motion.div
-              className="relative w-16 h-16"
+              className="relative w-20 h-20"
               animate={{ rotate: 360 }}
-              transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
             >
               <div className="absolute inset-0 rounded-full border border-neon-cyan/30" />
-              <div className="absolute inset-2 rounded-full border border-neon-cyan/20" />
+              <div className="absolute inset-2 rounded-full border border-neon-amber/20" />
               <div className="absolute inset-4 rounded-full border border-neon-cyan/10" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-2 h-2 bg-neon-cyan rounded-full" style={{ boxShadow: '0 0 10px hsl(var(--neon-cyan))' }} />
+                <motion.div 
+                  className="w-3 h-3 rounded-full"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(var(--neon-cyan)) 0%, hsl(var(--neon-amber)) 100%)',
+                    boxShadow: '0 0 15px hsl(var(--neon-cyan))'
+                  }}
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
               </div>
             </motion.div>
             
             <div className="space-y-2">
-              <p className="font-display text-sm text-foreground tracking-widest uppercase">
-                The Lab
+              <p className="font-display text-lg text-foreground tracking-widest uppercase">
+                Bala Mugesh M K
               </p>
               <p className="font-mono text-xs text-muted-foreground">
-                Systems. Intelligence. Design.
+                Multiversal Lab — Online
               </p>
             </div>
 
@@ -150,7 +170,13 @@ export const ContactSection = () => {
               animate={isInView ? { opacity: 1 } : {}}
               transition={{ delay: 1.2 }}
             >
-              <div className="w-2 h-2 bg-signal-green rounded-full animate-pulse" />
+              <motion.div 
+                className="w-2 h-2 bg-signal-green rounded-full"
+                animate={{ 
+                  boxShadow: ['0 0 5px hsl(var(--signal-green))', '0 0 15px hsl(var(--signal-green))', '0 0 5px hsl(var(--signal-green))']
+                }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
               <span className="font-mono text-xs text-hud-text">
                 All systems operational
               </span>

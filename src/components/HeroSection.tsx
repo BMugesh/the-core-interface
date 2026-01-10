@@ -39,14 +39,37 @@ const DataStream = ({ delay }: { delay: number }) => (
   </motion.div>
 );
 
+const ArcaneOrbit = ({ size, delay, reverse = false }: { size: number; delay: number; reverse?: boolean }) => (
+  <motion.div
+    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-neon-amber/20"
+    style={{ width: size, height: size }}
+    animate={{ rotate: reverse ? -360 : 360 }}
+    transition={{ duration: 40 + delay * 10, repeat: Infinity, ease: "linear" }}
+  >
+    {[0, 120, 240].map((angle) => (
+      <motion.div
+        key={angle}
+        className="absolute w-2 h-2 text-neon-amber/40 text-xs flex items-center justify-center"
+        style={{
+          top: '50%',
+          left: '50%',
+          transform: `rotate(${angle}deg) translateX(${size / 2}px) rotate(-${angle}deg)`,
+        }}
+      >
+        ◇
+      </motion.div>
+    ))}
+  </motion.div>
+);
+
 export const HeroSection = () => {
   const titleWords = ["I", "BUILD", "SYSTEMS", "THAT", "THINK."];
   
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background HUD elements */}
       <div className="absolute inset-0">
-        {/* Orbital rings */}
+        {/* Arc reactor rings */}
         <motion.div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] hud-ring opacity-20"
           animate={{ rotate: 360 }}
@@ -63,11 +86,29 @@ export const HeroSection = () => {
           transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
         />
         
+        {/* Arcane orbit rings */}
+        <ArcaneOrbit size={500} delay={0} />
+        <ArcaneOrbit size={650} delay={1} reverse />
+        
         {/* Data streams */}
         <DataStream delay={0} />
         <DataStream delay={2} />
         <DataStream delay={4} />
       </div>
+
+      {/* Central arc reactor core */}
+      <motion.div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-neon-cyan"
+        animate={{ 
+          scale: [1, 1.3, 1],
+          boxShadow: [
+            '0 0 30px hsl(var(--neon-cyan)), 0 0 60px hsl(var(--neon-cyan) / 0.5)',
+            '0 0 50px hsl(var(--neon-cyan)), 0 0 100px hsl(var(--neon-cyan) / 0.5)',
+            '0 0 30px hsl(var(--neon-cyan)), 0 0 60px hsl(var(--neon-cyan) / 0.5)'
+          ]
+        }}
+        transition={{ duration: 3, repeat: Infinity }}
+      />
 
       {/* Main content */}
       <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
@@ -86,7 +127,7 @@ export const HeroSection = () => {
             transition={{ duration: 0.8, delay: 0.3 }}
           >
             <span className="font-mono text-xs text-hud-text tracking-[0.3em] uppercase">
-              Core System Active
+              The Convergence Point
             </span>
           </motion.div>
 
@@ -121,16 +162,31 @@ export const HeroSection = () => {
 
           {/* Subtitle */}
           <motion.div
-            className="space-y-2 mb-12"
+            className="space-y-3 mb-12"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 1.3 }}
           >
             <p className="font-mono text-lg md:text-xl text-hud-text tracking-wide">
-              Interfaces. Logic. Intelligence.
+              Engineering intelligence across dimensions.
             </p>
-            <p className="font-mono text-sm text-muted-foreground tracking-widest">
-              This is not a portfolio. This is a lab.
+            <p className="font-mono text-sm text-neon-amber/70 tracking-widest">
+              AI · Frontend · Backend · Python
+            </p>
+          </motion.div>
+
+          {/* Identity */}
+          <motion.div
+            className="mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.5 }}
+          >
+            <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground mb-2">
+              Bala Mugesh M K
+            </h2>
+            <p className="font-mono text-sm text-muted-foreground tracking-wider">
+              AI Engineer | Full-Stack System Architect
             </p>
           </motion.div>
 
@@ -139,13 +195,19 @@ export const HeroSection = () => {
             className="flex flex-wrap justify-center gap-4"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.6 }}
+            transition={{ duration: 0.8, delay: 1.8 }}
           >
-            <button className="control-switch px-8 py-4 rounded-sm text-sm">
-              View Experiments
+            <button 
+              onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}
+              className="control-switch px-8 py-4 rounded-sm text-sm"
+            >
+              Enter the Lab
             </button>
-            <button className="control-switch px-8 py-4 rounded-sm text-sm border-neon-amber/40 text-neon-amber hover:border-neon-amber/60">
-              Initialize Contact
+            <button 
+              onClick={() => document.getElementById('skills')?.scrollIntoView({ behavior: 'smooth' })}
+              className="control-switch px-8 py-4 rounded-sm text-sm border-neon-amber/40 text-neon-amber hover:border-neon-amber/60"
+            >
+              Observe Experiments
             </button>
           </motion.div>
         </div>
@@ -155,7 +217,7 @@ export const HeroSection = () => {
           className="absolute bottom-12 left-1/2 -translate-x-1/2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 2 }}
+          transition={{ duration: 0.8, delay: 2.2 }}
         >
           <motion.div
             className="flex flex-col items-center gap-2 text-hud-text"
