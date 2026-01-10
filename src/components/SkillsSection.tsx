@@ -470,12 +470,12 @@ export const SkillsSection = () => {
               <motion.div
                 className="absolute inset-0 h-full pointer-events-none"
                 style={{
-                  background: 'linear-gradient(90deg, transparent, hsl(var(--neon-cyan) / 0.2), transparent)',
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(76, 175, 255, 0.2) 50%, transparent 100%)',
                   width: '100%',
                 }}
-                animate={{ x: ['-100%', '100%'] }}
+                animate={{ opacity: [0, 0.5, 0] }}
                 transition={{
-                  duration: 0.6,
+                  duration: 0.8,
                   delay: isInView ? 0.3 : 0,
                   ease: 'easeInOut',
                 }}

@@ -83,17 +83,17 @@ export const IntelligentText = ({
       >
         <motion.div
           style={{
-            background: 'linear-gradient(90deg, transparent, hsl(var(--neon-cyan)), transparent)',
             height: '1px',
             marginTop: '8px',
-            opacity: 0,
+            background: '#4CAFFFF',
+            opacity: 0.3,
           }}
           animate={{
-            opacity: [0, 0.4, 0],
-            x: ['-100%', '100%'],
+            opacity: [0.3, 0.6, 0.3],
           }}
           transition={{
-            duration: 1.2,
+            duration: 2,
+            repeat: Infinity,
             ease: 'easeInOut',
           }}
         />
