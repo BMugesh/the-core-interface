@@ -33,7 +33,7 @@ export const AboutSection = () => {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   return (
-    <section ref={sectionRef} className="relative py-32 px-6">
+    <section id="about" ref={sectionRef} className="relative py-32 px-6">
       <div className="max-w-4xl mx-auto">
         {/* Section header */}
         <motion.div
@@ -51,11 +51,11 @@ export const AboutSection = () => {
               style={{ transformOrigin: 'left' }}
             />
             <span className="font-mono text-xs text-neon-cyan tracking-[0.3em] uppercase">
-              System.profile
+              System.mind
             </span>
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground">
-            THE MIND BEHIND THE LAB
+            THE MIND INTERFACE
           </h2>
         </motion.div>
 
@@ -89,27 +89,27 @@ export const AboutSection = () => {
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 bg-signal-green rounded-full animate-pulse" />
                 <span className="font-mono text-xs text-hud-text uppercase tracking-wider">
-                  Briefing Active
+                  Intelligence Panel Active
                 </span>
               </div>
               <span className="font-mono text-xs text-muted-foreground">
-                REF: PROFILE.001
+                REF: MIND.001
               </span>
             </motion.div>
 
             {/* Data lines */}
             <div className="space-y-4">
               <DataLine delay={0.4}>
-                I engineer full-stack systems where design, backend logic, and artificial intelligence coexist.
+                I design systems where interface, logic, and intelligence converge.
               </DataLine>
               <DataLine delay={0.6}>
-                Every project is treated as a living system, not a static product.
+                Each project is a controlled experiment in scalability, adaptability, and thought.
               </DataLine>
               <DataLine delay={0.8}>
-                I build interfaces that feel intelligent—because they are.
+                Technology so advanced it appears magical. Magic so structured it feels engineered.
               </DataLine>
               <DataLine delay={1.0}>
-                The future is systems that understand context, adapt, and evolve.
+                Building the future: systems that understand context, adapt, and evolve.
               </DataLine>
             </div>
 
@@ -121,16 +121,16 @@ export const AboutSection = () => {
               transition={{ duration: 0.5, delay: 1.2 }}
             >
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs text-muted-foreground uppercase">Status:</span>
-                <span className="tech-label">Active</span>
+                <span className="font-mono text-xs text-muted-foreground uppercase">Operator:</span>
+                <span className="tech-label">Bala Mugesh M K</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs text-muted-foreground uppercase">Focus:</span>
-                <span className="tech-label">Full-Stack + AI</span>
+                <span className="tech-label">AI + Full-Stack</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs text-muted-foreground uppercase">Mode:</span>
-                <span className="tech-label">Building</span>
+                <span className="font-mono text-xs text-muted-foreground uppercase">Status:</span>
+                <span className="tech-label text-signal-green border-signal-green/30">Active</span>
               </div>
             </motion.div>
           </div>

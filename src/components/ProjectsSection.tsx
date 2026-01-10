@@ -6,37 +6,37 @@ interface Project {
   name: string;
   purpose: string;
   stack: string[];
-  status: 'active' | 'prototype' | 'archived';
+  status: 'active' | 'prototype' | 'research';
 }
 
 const projects: Project[] = [
   {
     id: "EXP-001",
-    name: "Neural Interface Dashboard",
-    purpose: "Real-time AI model monitoring and control system",
-    stack: ["React", "Python", "TensorFlow", "WebSocket"],
+    name: "StockGenie",
+    purpose: "Predictive Intelligence System for stock market analysis with ML-driven insights",
+    stack: ["Python", "TensorFlow", "React", "FastAPI"],
     status: "active",
   },
   {
     id: "EXP-002",
-    name: "Quantum State Manager",
-    purpose: "Distributed state management with predictive caching",
-    stack: ["TypeScript", "Redis", "GraphQL", "Docker"],
+    name: "PitchOS",
+    purpose: "AI Evaluation Engine for startup pitch analysis and scoring",
+    stack: ["Next.js", "OpenAI", "PostgreSQL", "Python"],
     status: "active",
   },
   {
     id: "EXP-003",
-    name: "Cognitive Search Engine",
-    purpose: "Context-aware search with natural language understanding",
-    stack: ["Next.js", "OpenAI", "PostgreSQL", "Vector DB"],
+    name: "R.I.O.",
+    purpose: "AI Operating System Concept — intelligent assistant framework",
+    stack: ["Python", "LangChain", "React", "WebSocket"],
     status: "prototype",
   },
   {
     id: "EXP-004",
-    name: "Adaptive UI Framework",
-    purpose: "Self-modifying interface based on user behavior patterns",
-    stack: ["React", "ML Kit", "Framer Motion", "Analytics"],
-    status: "prototype",
+    name: "Realm Theory",
+    purpose: "Intelligence × Physics Research — exploring computational boundaries",
+    stack: ["Python", "NumPy", "Visualization", "Research"],
+    status: "research",
   },
 ];
 
@@ -44,6 +44,15 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
   const [isHovered, setIsHovered] = useState(false);
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'signal-green';
+      case 'prototype': return 'neon-amber';
+      case 'research': return 'neon-cyan';
+      default: return 'steel';
+    }
+  };
 
   return (
     <motion.div
@@ -59,12 +68,12 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
       <motion.div
         className="float-card p-6 rounded-lg relative overflow-hidden"
         animate={{
-          y: isHovered ? -5 : 0,
+          y: isHovered ? -8 : 0,
           rotateY: isHovered ? 2 : 0,
         }}
         transition={{ duration: 0.3 }}
       >
-        {/* Holographic frame effect */}
+        {/* Holographic containment field effect */}
         <motion.div
           className="absolute inset-0 pointer-events-none"
           animate={{
@@ -74,6 +83,21 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
           }}
         />
 
+        {/* Energy pulse on hover */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: isHovered ? 1 : 0 }}
+        >
+          <motion.div
+            className="absolute inset-0 border border-neon-cyan/30 rounded-lg"
+            animate={isHovered ? {
+              boxShadow: ['0 0 10px hsl(var(--neon-cyan) / 0.2)', '0 0 25px hsl(var(--neon-cyan) / 0.4)', '0 0 10px hsl(var(--neon-cyan) / 0.2)']
+            } : {}}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          />
+        </motion.div>
+
         {/* Scan line effect on hover */}
         <motion.div
           className="absolute inset-0 pointer-events-none overflow-hidden"
@@ -81,9 +105,9 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
           animate={{ opacity: isHovered ? 1 : 0 }}
         >
           <motion.div
-            className="absolute w-full h-px bg-neon-cyan/30"
-            animate={{ y: isHovered ? ['0%', '500%'] : '0%' }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+            className="absolute w-full h-px bg-neon-cyan/40"
+            animate={{ y: isHovered ? ['0%', '600%'] : '0%' }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
           />
         </motion.div>
 
@@ -95,16 +119,18 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
               {project.name}
             </h3>
           </div>
-          <div className={`px-2 py-1 rounded-sm text-xs font-mono uppercase ${
-            project.status === 'active' 
-              ? 'bg-signal-green/20 text-signal-green border border-signal-green/30' 
-              : 'bg-neon-amber/20 text-neon-amber border border-neon-amber/30'
-          }`}>
+          <div className={`px-2 py-1 rounded-sm text-xs font-mono uppercase bg-${getStatusColor(project.status)}/20 text-${getStatusColor(project.status)} border border-${getStatusColor(project.status)}/30`}
+            style={{
+              backgroundColor: `hsl(var(--${getStatusColor(project.status)}) / 0.2)`,
+              color: `hsl(var(--${getStatusColor(project.status)}))`,
+              borderColor: `hsl(var(--${getStatusColor(project.status)}) / 0.3)`,
+            }}
+          >
             {project.status}
           </div>
         </div>
 
-        {/* Purpose */}
+        {/* Purpose / Diagnostics */}
         <p className="font-mono text-sm text-muted-foreground mb-6 leading-relaxed">
           {project.purpose}
         </p>
@@ -140,7 +166,7 @@ const ProjectCard = ({ project, index }: { project: Project; index: number }) =>
             style={{ transformOrigin: 'left' }}
           />
           <span className="font-mono text-xs text-hud-text">
-            {isHovered ? 'Accessing...' : 'Ready'}
+            {isHovered ? 'Accessing diagnostics...' : 'Contained'}
           </span>
         </motion.div>
 
@@ -171,7 +197,7 @@ export const ProjectsSection = () => {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
 
   return (
-    <section ref={sectionRef} className="relative py-32 px-6">
+    <section id="projects" ref={sectionRef} className="relative py-32 px-6">
       <div className="max-w-6xl mx-auto">
         {/* Section header */}
         <motion.div
@@ -193,10 +219,10 @@ export const ProjectsSection = () => {
             </span>
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground">
-            EXPERIMENTS & BUILDS
+            LIVING EXPERIMENTS
           </h2>
           <p className="font-mono text-sm text-muted-foreground mt-4 max-w-xl">
-            Active prototypes and system builds. Each project is a living experiment.
+            Projects are not cards. They are contained realities — each floating in a holographic containment field.
           </p>
         </motion.div>
 
@@ -215,7 +241,7 @@ export const ProjectsSection = () => {
           transition={{ delay: 1 }}
         >
           <span className="font-mono text-xs text-muted-foreground">
-            More experiments in progress...
+            More experiments incubating...
           </span>
         </motion.div>
       </div>
