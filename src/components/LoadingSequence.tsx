@@ -1,11 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 
 interface LoadingSequenceProps {
   onComplete: () => void;
 }
 
-// Cinematic name decoder - slow, controlled, 1-2 passes only
+// Enhanced Cinematic name decoder with character-by-character decoding
 const CinematicNameDecoder = ({ 
   text, 
   isActive,
@@ -16,52 +16,174 @@ const CinematicNameDecoder = ({
   onComplete: () => void;
 }) => {
   const [displayText, setDisplayText] = useState('');
-  const [phase, setPhase] = useState(0); // 0 = scrambled, 1 = partial, 2 = complete
+  const [decodePhase, setDecodePhase] = useState(0); // 0 = corrupted, 1 = partial, 2 = complete
+  const animationFrameRef = useRef<number | null>(null);
+  const startTimeRef = useRef<number | null>(null);
+  const charStatesRef = useRef<Array<{ char: string; decoded: boolean; pass: number }>>([]);
   
   const glyphSets = useMemo(() => ({
-    corrupted: '△▢#@◊∆◇□■●○',
-    partial: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ ',
+    corrupted: '△▢#@◊∆◇□■●○▲▼◄►',
+    partial: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
   }), []);
 
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive) {
+      setDisplayText('');
+      setDecodePhase(0);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      return;
+    }
 
     const chars = text.split('');
-    
-    // Phase 0: Initial corrupted state (0-400ms)
-    const corrupted = chars.map((char, i) => {
+    const totalDuration = 2800; // 2.8 seconds for full decode
+    const pass1Duration = 1200; // First pass: 1.2s
+    const pass2Duration = 1000; // Second pass: 1.0s
+    const pass3Duration = 600;  // Final pass: 0.6s
+
+    // Initialize character states
+    charStatesRef.current = chars.map((char) => ({
+      char: char === ' ' ? ' ' : char,
+      decoded: char === ' ',
+      pass: 0,
+    }));
+
+    // Initial corrupted state
+    const initialText = chars.map((char, i) => {
       if (char === ' ') return ' ';
-      // 60% corrupted initially
-      return Math.random() > 0.4 
-        ? glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)]
-        : char;
+      return glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)];
     }).join('');
-    setDisplayText(corrupted);
-    setPhase(0);
+    setDisplayText(initialText);
+    setDecodePhase(0);
+    startTimeRef.current = Date.now();
 
-    // Phase 1: Partial decode (400-800ms)
-    const timer1 = setTimeout(() => {
-      const partial = chars.map((char, i) => {
-        if (char === ' ') return ' ';
-        // 20% corrupted
-        return Math.random() > 0.8 
-          ? glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)]
-          : char;
-      }).join('');
-      setDisplayText(partial);
-      setPhase(1);
-    }, 500);
+    const animate = () => {
+      if (!startTimeRef.current) return;
 
-    // Phase 2: Complete (800ms+)
-    const timer2 = setTimeout(() => {
-      setDisplayText(text);
-      setPhase(2);
-      onComplete();
-    }, 1000);
+      const elapsed = Date.now() - startTimeRef.current;
+      const progress = Math.min(elapsed / totalDuration, 1);
+
+      let newText = '';
+      let allDecoded = true;
+
+      // Pass 1: Initial corruption with gradual reveal (0-1.2s)
+      if (elapsed < pass1Duration) {
+        const pass1Progress = elapsed / pass1Duration;
+        setDecodePhase(0);
+        
+        for (let i = 0; i < chars.length; i++) {
+          const state = charStatesRef.current[i];
+          if (state.char === ' ') {
+            newText += ' ';
+            continue;
+          }
+
+          // Staggered character reveal with wave effect
+          const charProgress = (pass1Progress * chars.length + i * 0.15) / chars.length;
+          
+          if (charProgress > 0.3 && Math.random() > 0.7) {
+            // Some characters start to resolve
+            if (Math.random() > 0.5) {
+              newText += state.char;
+              state.decoded = true;
+              state.pass = 1;
+            } else {
+              newText += glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)];
+            }
+          } else {
+            // Still corrupted
+            newText += glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)];
+            allDecoded = false;
+          }
+        }
+      }
+      // Pass 2: Major resolution (1.2-2.2s)
+      else if (elapsed < pass1Duration + pass2Duration) {
+        const pass2Progress = (elapsed - pass1Duration) / pass2Duration;
+        setDecodePhase(1);
+        
+        for (let i = 0; i < chars.length; i++) {
+          const state = charStatesRef.current[i];
+          if (state.char === ' ') {
+            newText += ' ';
+            continue;
+          }
+
+          const charProgress = (pass2Progress * chars.length + i * 0.2) / chars.length;
+          
+          if (charProgress > 0.4 || state.decoded) {
+            // Character resolved or resolving
+            if (Math.random() > 0.15) {
+              newText += state.char;
+              state.decoded = true;
+              state.pass = 2;
+            } else {
+              // Occasional glitch
+              newText += glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)];
+              allDecoded = false;
+            }
+          } else {
+            // Still resolving
+            if (Math.random() > 0.6) {
+              newText += state.char;
+            } else {
+              newText += glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)];
+            }
+            allDecoded = false;
+          }
+        }
+      }
+      // Pass 3: Final lock (2.2-2.8s)
+      else {
+        const pass3Progress = (elapsed - pass1Duration - pass2Duration) / pass3Duration;
+        setDecodePhase(2);
+        
+        for (let i = 0; i < chars.length; i++) {
+          const state = charStatesRef.current[i];
+          if (state.char === ' ') {
+            newText += ' ';
+            continue;
+          }
+
+          const charProgress = (pass3Progress * chars.length + i * 0.1) / chars.length;
+          
+          if (charProgress > 0.2 || state.decoded) {
+            newText += state.char;
+            state.decoded = true;
+            state.pass = 3;
+          } else {
+            // Final glitches resolving
+            if (Math.random() > 0.3) {
+              newText += state.char;
+              state.decoded = true;
+            } else {
+              newText += glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)];
+            }
+            allDecoded = false;
+          }
+        }
+      }
+
+      setDisplayText(newText);
+
+      if (progress >= 1 || allDecoded) {
+        // Ensure final text is correct
+        setDisplayText(text);
+        setDecodePhase(2);
+        onComplete();
+        return;
+      }
+
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    animationFrameRef.current = requestAnimationFrame(animate);
 
     return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
     };
   }, [isActive, text, glyphSets, onComplete]);
 
@@ -71,16 +193,19 @@ const CinematicNameDecoder = ({
       initial={{ opacity: 0 }}
       animate={{ 
         opacity: 1,
-        filter: phase === 2 ? 'blur(0px)' : 'blur(0.5px)'
+        filter: decodePhase === 2 ? 'blur(0px)' : decodePhase === 1 ? 'blur(0.3px)' : 'blur(0.8px)'
       }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.3 }}
       style={{
-        textShadow: phase === 2 
-          ? '0 0 60px rgba(255, 255, 255, 0.15), 0 0 120px rgba(255, 255, 255, 0.05)'
-          : '0 0 30px rgba(255, 255, 255, 0.1)',
+        textShadow: decodePhase === 2 
+          ? '0 0 80px rgba(255, 255, 255, 0.2), 0 0 140px rgba(255, 255, 255, 0.1), 0 0 200px rgba(255, 255, 255, 0.05)'
+          : decodePhase === 1
+          ? '0 0 50px rgba(255, 255, 255, 0.15), 0 0 100px rgba(255, 255, 255, 0.08)'
+          : '0 0 30px rgba(255, 255, 255, 0.1), 0 0 60px rgba(255, 255, 255, 0.05)',
+        letterSpacing: decodePhase === 2 ? '0.08em' : '0.12em',
       }}
     >
-      {displayText}
+      {displayText || text}
     </motion.div>
   );
 };
@@ -88,34 +213,74 @@ const CinematicNameDecoder = ({
 export const LoadingSequence = ({ onComplete }: LoadingSequenceProps) => {
   const [phase, setPhase] = useState(0);
   const [nameDecoded, setNameDecoded] = useState(false);
+  const [enteringWorldVisible, setEnteringWorldVisible] = useState(false);
+  const timersRef = useRef<NodeJS.Timeout[]>([]);
 
+  // Clear all timers helper
+  const clearAllTimers = () => {
+    timersRef.current.forEach(timer => clearTimeout(timer));
+    timersRef.current = [];
+  };
+
+  // Phase 0 -> 1: Black to Welcome (fixed timing)
   useEffect(() => {
-    // Always show the loading sequence on every page load/reload
+    const timer = setTimeout(() => {
+      setPhase(1);
+    }, 900);
+    timersRef.current.push(timer);
 
-    // Phase timing (IMAX cinematic pacing)
-    const timeline = [
-      { phase: 1, delay: 900 },    // End black, show welcome
-      { phase: 2, delay: 2200 },   // End welcome, start name decode
-      { phase: 3, delay: 3400 },   // Name decoded, hold
-      { phase: 4, delay: 5000 },   // Show "Entering the World"
-      { phase: 5, delay: 6200 },   // Camera push begins
-      { phase: 6, delay: 7400 },   // Exit
-    ];
+    return () => clearAllTimers();
+  }, []);
 
-    const timers = timeline.map(({ phase: p, delay }) => 
-      setTimeout(() => setPhase(p), delay)
-    );
+  // Phase 1 -> 2: Welcome to Name Decode (fixed timing)
+  useEffect(() => {
+    if (phase === 1) {
+      const timer = setTimeout(() => {
+        setPhase(2);
+      }, 1300); // 1.3s after welcome appears
+      timersRef.current.push(timer);
+    }
+  }, [phase]);
 
-    // Final exit
-    const exitTimer = setTimeout(() => {
-      onComplete();
-    }, 8000);
+  // Phase 2 -> 3: Wait for name decoding to complete (event-driven)
+  const handleNameDecoded = () => {
+    setNameDecoded(true);
+    // Hold the decoded name for a moment before showing "Entering the World"
+    const timer = setTimeout(() => {
+      setPhase(3);
+      // After a brief hold, fade up "Entering the World"
+      const enteringTimer = setTimeout(() => {
+        setEnteringWorldVisible(true);
+        // After "Entering the World" fades up, proceed to camera handoff
+        const cameraTimer = setTimeout(() => {
+          setPhase(4);
+        }, 1500); // Hold "Entering the World" for 1.5s
+        timersRef.current.push(cameraTimer);
+      }, 800); // Brief hold of decoded name
+      timersRef.current.push(enteringTimer);
+    }, 600); // Hold decoded name for 0.6s
+    timersRef.current.push(timer);
+  };
 
-    return () => {
-      timers.forEach(clearTimeout);
-      clearTimeout(exitTimer);
-    };
-  }, [onComplete]);
+  // Phase 4 -> 5: Camera handoff (after "Entering the World")
+  useEffect(() => {
+    if (phase === 4) {
+      const timer = setTimeout(() => {
+        setPhase(5);
+        // After camera handoff, exit to hero
+        const exitTimer = setTimeout(() => {
+          setPhase(6);
+          // Final exit after camera handoff completes
+          const finalTimer = setTimeout(() => {
+            onComplete();
+          }, 1200); // Camera handoff duration
+          timersRef.current.push(finalTimer);
+        }, 200); // Brief delay before exit
+        timersRef.current.push(exitTimer);
+      }, 1400); // Camera handoff animation duration
+      timersRef.current.push(timer);
+    }
+  }, [phase, onComplete]);
 
   return (
     <motion.div
@@ -156,9 +321,9 @@ export const LoadingSequence = ({ onComplete }: LoadingSequenceProps) => {
       )}
 
       {/* ========================================
-          PHASE 3: CINEMATIC NAME DECODING (2.2-3.4s)
-          Slow, deliberate, 1-2 correction passes
-          Like signal locking onto focus
+          PHASE 3: CINEMATIC NAME DECODING
+          Enhanced character-by-character decoding
+          Event-driven: waits for full decode
           ======================================== */}
       {phase === 2 && (
         <motion.div
@@ -170,99 +335,155 @@ export const LoadingSequence = ({ onComplete }: LoadingSequenceProps) => {
           <CinematicNameDecoder 
             text="BALA MUGESH M K"
             isActive={phase === 2}
-            onComplete={() => setNameDecoded(true)}
+            onComplete={handleNameDecoded}
           />
         </motion.div>
       )}
 
       {/* ========================================
-          PHASE 4: NAME HOLD (3.4-5s)
-          Stable. Clean. Let it breathe.
+          PHASE 4: NAME HOLD + ENTERING WORLD FADE-UP
+          Decoded name holds, then "Entering the World" fades up
           ======================================== */}
-      {phase === 3 && (
-        <motion.div
-          className="absolute inset-0 flex items-center justify-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.2 }}
-        >
-          <motion.div
-            className="text-5xl md:text-7xl lg:text-8xl font-display font-bold tracking-[0.08em] text-white"
-            style={{
-              textShadow: '0 0 60px rgba(255, 255, 255, 0.15), 0 0 120px rgba(255, 255, 255, 0.05)',
-            }}
-          >
-            BALA MUGESH M K
-          </motion.div>
-        </motion.div>
-      )}
-
-      {/* ========================================
-          PHASE 5: WORLD ENTRY LINE (5-6.2s)
-          "ENTERING THE WORLD" appears below
-          Narrative, not technical
-          ======================================== */}
-      {phase === 4 && (
+      {(phase === 3 || phase === 4) && (
         <motion.div
           className="absolute inset-0 flex flex-col items-center justify-center gap-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.3 }}
         >
+          {/* Decoded name - stable and glowing */}
           <motion.div
             className="text-5xl md:text-7xl lg:text-8xl font-display font-bold tracking-[0.08em] text-white"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
             style={{
-              textShadow: '0 0 60px rgba(255, 255, 255, 0.15), 0 0 120px rgba(255, 255, 255, 0.05)',
+              textShadow: '0 0 80px rgba(255, 255, 255, 0.2), 0 0 140px rgba(255, 255, 255, 0.1), 0 0 200px rgba(255, 255, 255, 0.05)',
             }}
           >
             BALA MUGESH M K
           </motion.div>
           
-          <motion.span
-            className="font-display text-sm md:text-base text-white/50 tracking-[0.35em] uppercase"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            Entering the World
-          </motion.span>
+          {/* "Entering the World" - smooth fade up */}
+          {enteringWorldVisible && (
+            <motion.span
+              className="font-display text-sm md:text-base text-white/60 tracking-[0.35em] uppercase"
+              initial={{ opacity: 0, y: 20, filter: 'blur(4px)' }}
+              animate={{ 
+                opacity: 1, 
+                y: 0, 
+                filter: 'blur(0px)',
+              }}
+              transition={{ 
+                duration: 1.2, 
+                ease: [0.25, 0.1, 0.25, 1],
+                delay: 0.1
+              }}
+              style={{
+                textShadow: '0 0 20px rgba(255, 255, 255, 0.3), 0 0 40px rgba(255, 255, 255, 0.1)',
+              }}
+            >
+              Entering the World
+            </motion.span>
+          )}
         </motion.div>
       )}
 
       {/* ========================================
-          PHASE 6: CAMERA PUSH (6.2-7.4s)
-          Slow forward drift. Subtle HUD lines.
-          No flash. No cut. Continuous.
+          PHASE 5: IMAX CAMERA HANDOFF
+          Enhanced cinematic camera push into hero
           ======================================== */}
       {phase === 5 && (
         <motion.div
-          className="absolute inset-0 flex items-center justify-center"
+          className="absolute inset-0 flex flex-col items-center justify-center"
           initial={{ opacity: 1, scale: 1 }}
-          animate={{ opacity: 1, scale: 1.08 }}
-          transition={{ duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
+          animate={{ 
+            opacity: [1, 0.95, 0.7, 0],
+            scale: [1, 1.05, 1.12, 1.15]
+          }}
+          transition={{ 
+            duration: 1.4, 
+            ease: [0.25, 0.1, 0.25, 1],
+            times: [0, 0.3, 0.7, 1]
+          }}
         >
-          {/* Subtle alignment lines - appear then dissolve */}
+          {/* Enhanced HUD alignment lines */}
           <motion.div
-            className="absolute top-1/3 left-1/2 -translate-x-1/2 h-px w-0 bg-gradient-to-r from-transparent via-white/15 to-transparent"
-            animate={{ width: '300px', opacity: [0, 0.3, 0] }}
-            transition={{ duration: 1, ease: 'easeInOut' }}
-          />
-          <motion.div
-            className="absolute bottom-1/3 left-1/2 -translate-x-1/2 h-px w-0 bg-gradient-to-r from-transparent via-white/15 to-transparent"
-            animate={{ width: '300px', opacity: [0, 0.3, 0] }}
-            transition={{ duration: 1, ease: 'easeInOut', delay: 0.1 }}
+            className="absolute top-1/3 left-1/2 -translate-x-1/2 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ 
+              width: ['0px', '400px', '400px', '0px'],
+              opacity: [0, 0.5, 0.3, 0]
+            }}
+            transition={{ 
+              duration: 1.4, 
+              ease: 'easeInOut',
+              times: [0, 0.2, 0.6, 1]
+            }}
           />
           
-          {/* Name continues stable during drift */}
+          {/* Center focus point */}
           <motion.div
-            className="text-5xl md:text-7xl lg:text-8xl font-display font-bold tracking-[0.08em] text-white"
-            animate={{ opacity: [1, 0.8, 0] }}
-            transition={{ duration: 1.2, ease: 'easeInOut' }}
-            style={{
-              textShadow: '0 0 60px rgba(255, 255, 255, 0.15), 0 0 120px rgba(255, 255, 255, 0.05)',
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-white/40"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ 
+              opacity: [0, 0.6, 0.3, 0],
+              scale: [0, 1, 1.5, 0]
+            }}
+            transition={{ 
+              duration: 1.4, 
+              ease: 'easeInOut',
+              times: [0, 0.3, 0.7, 1]
+            }}
+          />
+          
+          <motion.div
+            className="absolute bottom-1/3 left-1/2 -translate-x-1/2 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ 
+              width: ['0px', '400px', '400px', '0px'],
+              opacity: [0, 0.5, 0.3, 0]
+            }}
+            transition={{ 
+              duration: 1.4, 
+              ease: 'easeInOut',
+              delay: 0.15,
+              times: [0, 0.2, 0.6, 1]
+            }}
+          />
+          
+          {/* Name and text fade out during camera push */}
+          <motion.div
+            className="flex flex-col items-center justify-center gap-8"
+            animate={{ 
+              opacity: [1, 0.9, 0.5, 0],
+              y: [0, -10, -20, -30]
+            }}
+            transition={{ 
+              duration: 1.4, 
+              ease: 'easeInOut',
+              times: [0, 0.3, 0.7, 1]
             }}
           >
-            BALA MUGESH M K
+            <motion.div
+              className="text-5xl md:text-7xl lg:text-8xl font-display font-bold tracking-[0.08em] text-white"
+              style={{
+                textShadow: '0 0 80px rgba(255, 255, 255, 0.2), 0 0 140px rgba(255, 255, 255, 0.1)',
+              }}
+            >
+              BALA MUGESH M K
+            </motion.div>
+            
+            {enteringWorldVisible && (
+              <motion.span
+                className="font-display text-sm md:text-base text-white/60 tracking-[0.35em] uppercase"
+                style={{
+                  textShadow: '0 0 20px rgba(255, 255, 255, 0.3)',
+                }}
+              >
+                Entering the World
+              </motion.span>
+            )}
           </motion.div>
         </motion.div>
       )}
