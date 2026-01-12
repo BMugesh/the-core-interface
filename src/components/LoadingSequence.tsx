@@ -21,32 +21,32 @@ const CinematicNameDecoder = ({
   const [decodeProgress, setDecodeProgress] = useState<number>(0);
   const animationFrameRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
+  const hasCompletedRef = useRef(false);
 
   useEffect(() => {
     if (!isActive) {
-      setDisplayText('');
-      setDecodeProgress(0);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
-      startTimeRef.current = null;
+      hasCompletedRef.current = false;
       return;
     }
 
-    const chars = text.split('');
-    
-    // IMAX timing - reduced initial delay for faster start
-    const initialDelay = 100; // Reduced from 400ms for quicker start
-    const timePerChar = 200; // 200ms per character - slow and cinematic
-    
-    startTimeRef.current = Date.now();
+    // Reset state only when activation starts
     setDisplayText('');
     setDecodeProgress(0);
+    hasCompletedRef.current = false;
 
-    let hasCompleted = false;
+    const chars = text.split('');
+    
+    // IMAX timing - minimal initial delay for immediate start
+    const initialDelay = 20; // Nearly instant start
+    const timePerChar = 180; // 180ms per character - fast reveal
+    
+    startTimeRef.current = Date.now();
 
     const animate = () => {
-      if (!startTimeRef.current || hasCompleted) return;
+      if (!startTimeRef.current || hasCompletedRef.current) return;
 
       const elapsed = Date.now() - startTimeRef.current;
       
@@ -108,12 +108,10 @@ const CinematicNameDecoder = ({
         // Ensure final text is perfect and locked
         setDisplayText(text);
         setDecodeProgress(1);
-        hasCompleted = true;
+        hasCompletedRef.current = true;
         
-        // Brief hold to show locked state
-        setTimeout(() => {
-          onComplete();
-        }, 400);
+        // Immediate callback without delay
+        onComplete();
         return;
       }
 
@@ -127,7 +125,7 @@ const CinematicNameDecoder = ({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isActive, text, onComplete]);
+  }, [isActive]);
 
   // Calculate visual clarity based on decode progress
   const clarity = decodeProgress;
