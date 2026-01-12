@@ -5,6 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { LoadingSequence } from '@/components/LoadingSequence';
 import { ParticleBackground } from '@/components/ParticleBackground';
 import { HUDNavigation } from '@/components/HUDNavigation';
+import { CursorEffects } from '@/components/CursorEffects';
 import { HeroSection } from '@/components/HeroSection';
 import { AboutSection } from '@/components/AboutSection';
 import { SkillsSection } from '@/components/SkillsSection';
@@ -25,7 +26,7 @@ const Index = () => {
   useCinematicScroll(performance.profile);
 
   return (
-    <div className="relative min-h-screen bg-void-deep text-foreground overflow-x-hidden">
+    <div className="relative min-h-screen bg-void-deep text-foreground overflow-x-hidden cursor-none">
       <AnimatePresence>
         {isLoading && (
           <LoadingSequence onComplete={() => setIsLoading(false)} />
@@ -34,6 +35,7 @@ const Index = () => {
 
       {!isLoading && (
         <>
+          <CursorEffects />
           <ParticleBackground />
           <HUDNavigation />
           

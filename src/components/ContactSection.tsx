@@ -5,6 +5,7 @@ import { ContextualHUD } from './ContextualHUD';
 import { useVisitedSections } from '../hooks/useVisitedSections';
 import { FocusReveal } from './FocusReveal';
 import { IntelligentText } from './IntelligentText';
+import { MagneticButton } from './MagneticButton';
 // Terminal-style data stream link
 const DataStreamLink = ({ 
   icon: Icon, 
@@ -24,75 +25,75 @@ const DataStreamLink = ({
   const [isTransmitting, setIsTransmitting] = useState(false);
 
   return (
-    <motion.div
-      ref={ref}
-      className="relative"
-      initial={{ opacity: 0, x: -20 }}
-      animate={isInView ? { opacity: 1, x: 0 } : {}}
-      transition={{ duration: 0.6, delay }}
-    >
-      <motion.a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="group relative flex items-center gap-4 p-4 border border-white/10 backdrop-blur-sm overflow-hidden bg-void-deep/40 hover:border-neon-cyan/50 transition-colors duration-500"
-        onMouseEnter={() => setIsTransmitting(true)}
-        onMouseLeave={() => setIsTransmitting(false)}
+    <MagneticButton strength={0.2} className="w-full">
+      <motion.div
+        ref={ref}
+        className="relative"
+        initial={{ opacity: 0, x: -20 }}
+        animate={isInView ? { opacity: 1, x: 0 } : {}}
+        transition={{ duration: 0.6, delay }}
       >
-        {/* Data stream background */}
-        <motion.div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'linear-gradient(90deg, transparent 0%, hsl(var(--neon-cyan) / 0.05) 50%, transparent 100%)'
-          }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: isTransmitting ? 1 : 0 }}
-          transition={{ duration: 0.3 }}
-        />
-        
-        {/* Scan line effect */}
-        {isTransmitting && (
-          <motion.div
-            className="absolute inset-0 pointer-events-none overflow-hidden"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <motion.div
-              className="absolute w-full h-px bg-neon-cyan/40"
-              style={{ boxShadow: '0 0 10px hsl(var(--neon-cyan))' }}
-              animate={{ y: ['0%', '400%'] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-            />
-          </motion.div>
-        )}
-
-        {/* Icon with pulse */}
-        <div
-          className="relative z-10 flex items-center justify-center w-10 h-10 border border-white/10 group-hover:border-neon-cyan/50 transition-colors duration-500"
+        <motion.a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group relative flex items-center gap-4 p-4 border border-white/10 backdrop-blur-sm overflow-hidden bg-void-deep/40 hover:border-neon-cyan/50 transition-colors duration-500"
+          onMouseEnter={() => setIsTransmitting(true)}
+          onMouseLeave={() => setIsTransmitting(false)}
         >
-          <Icon className="w-5 h-5 text-gray-400 group-hover:text-neon-cyan transition-colors duration-300" />
-        </div>
-
-        {/* Content */}
-        <div className="relative z-10 flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-mono text-[10px] text-gray-500 uppercase tracking-wider">
-              {protocol}
-            </span>
-            <motion.span
-              className="font-mono text-[10px] text-neon-cyan"
-              animate={{ opacity: isTransmitting ? [1, 0.5, 1] : 0.3 }}
-              transition={{ duration: 0.8, repeat: Infinity }}
+          {/* Data stream background */}
+          <motion.div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'linear-gradient(90deg, transparent 0%, hsl(var(--neon-cyan) / 0.05) 50%, transparent 100%)'
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isTransmitting ? 1 : 0 }}
+            transition={{ duration: 0.3 }}
+          />
+          
+          {/* Scan line effect */}
+          {isTransmitting && (
+            <motion.div
+              className="absolute inset-0 pointer-events-none overflow-hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
             >
-              {'>>>'}
-            </motion.span>
+              <motion.div
+                className="absolute w-full h-px bg-neon-cyan/40"
+                style={{ boxShadow: '0 0 10px hsl(var(--neon-cyan))' }}
+                animate={{ y: ['0%', '400%'] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+              />
+            </motion.div>
+          )}
+
+          {/* Icon with pulse */}
+          <div className="relative z-10 flex items-center justify-center w-10 h-10 border border-white/10 group-hover:border-neon-cyan/50 transition-colors duration-500">
+            <Icon className="w-5 h-5 text-gray-400 group-hover:text-neon-cyan transition-colors duration-300" />
           </div>
-          <span className="font-mono text-sm text-gray-300 group-hover:text-white transition-colors">
-            {label}
-          </span>
-        </div>
-      </motion.a>
-    </motion.div>
+
+          {/* Content */}
+          <div className="relative z-10 flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-mono text-[10px] text-gray-500 uppercase tracking-wider">
+                {protocol}
+              </span>
+              <motion.span
+                className="font-mono text-[10px] text-neon-cyan"
+                animate={{ opacity: isTransmitting ? [1, 0.5, 1] : 0.3 }}
+                transition={{ duration: 0.8, repeat: Infinity }}
+              >
+                {'>>>'}
+              </motion.span>
+            </div>
+            <span className="font-mono text-sm text-gray-300 group-hover:text-white transition-colors">
+              {label}
+            </span>
+          </div>
+        </motion.a>
+      </motion.div>
+    </MagneticButton>
   );
 };
 
