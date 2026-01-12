@@ -5,7 +5,7 @@ interface LoadingSequenceProps {
   onComplete: () => void;
 }
 
-// Enhanced Cinematic name decoder with character-by-character decoding
+// Clean letter-by-letter sequential decoder - slow, deliberate, perfect
 const CinematicNameDecoder = ({ 
   text, 
   isActive,
@@ -16,20 +16,26 @@ const CinematicNameDecoder = ({
   onComplete: () => void;
 }) => {
   const [displayText, setDisplayText] = useState('');
-  const [decodePhase, setDecodePhase] = useState(0); // 0 = corrupted, 1 = partial, 2 = complete
+  const [decodePhase, setDecodePhase] = useState(0); // 0 = corrupted, 1 = decoding, 2 = complete
+  const [overallProgress, setOverallProgress] = useState(0); // 0-1 for visual effects
+  const currentCharIndexRef = useRef<number>(0);
+  const charDecodeStateRef = useRef<Array<{ 
+    char: string; 
+    decoded: boolean; 
+    decodeProgress: number; // 0-1 for individual char decode animation
+  }>>([]);
   const animationFrameRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
-  const charStatesRef = useRef<Array<{ char: string; decoded: boolean; pass: number }>>([]);
   
   const glyphSets = useMemo(() => ({
     corrupted: '△▢#@◊∆◇□■●○▲▼◄►',
-    partial: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
   }), []);
 
   useEffect(() => {
     if (!isActive) {
       setDisplayText('');
       setDecodePhase(0);
+      currentCharIndexRef.current = 0;
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
@@ -37,141 +43,138 @@ const CinematicNameDecoder = ({
     }
 
     const chars = text.split('');
-    const totalDuration = 2800; // 2.8 seconds for full decode
-    const pass1Duration = 1200; // First pass: 1.2s
-    const pass2Duration = 1000; // Second pass: 1.0s
-    const pass3Duration = 600;  // Final pass: 0.6s
-
+    
+    // Timing configuration - slow and deliberate
+    const timePerLetter = 180; // 180ms per letter (slow and clean)
+    const charDecodeDuration = 120; // 120ms for each letter's decode animation
+    const initialCorruptionDelay = 300; // 300ms initial corruption display
+    
     // Initialize character states
-    charStatesRef.current = chars.map((char) => ({
-      char: char === ' ' ? ' ' : char,
-      decoded: char === ' ',
-      pass: 0,
+    charDecodeStateRef.current = chars.map((char) => ({
+      char: char,
+      decoded: char === ' ', // Spaces are already "decoded"
+      decodeProgress: 0,
     }));
 
-    // Initial corrupted state
-    const initialText = chars.map((char, i) => {
+    // Initial corrupted state - all characters corrupted
+    const initialText = chars.map((char) => {
       if (char === ' ') return ' ';
       return glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)];
     }).join('');
     setDisplayText(initialText);
     setDecodePhase(0);
+    currentCharIndexRef.current = 0;
     startTimeRef.current = Date.now();
 
     const animate = () => {
       if (!startTimeRef.current) return;
 
       const elapsed = Date.now() - startTimeRef.current;
-      const progress = Math.min(elapsed / totalDuration, 1);
+      
+      // Wait for initial corruption display
+      if (elapsed < initialCorruptionDelay) {
+        animationFrameRef.current = requestAnimationFrame(animate);
+        return;
+      }
+
+      const adjustedElapsed = elapsed - initialCorruptionDelay;
+      setDecodePhase(1); // Start decoding phase
 
       let newText = '';
       let allDecoded = true;
+      const totalChars = chars.length;
 
-      // Pass 1: Initial corruption with gradual reveal (0-1.2s)
-      if (elapsed < pass1Duration) {
-        const pass1Progress = elapsed / pass1Duration;
-        setDecodePhase(0);
+      // Calculate which character should be decoding now
+      const targetCharIndex = Math.floor(adjustedElapsed / timePerLetter);
+      
+      // Build the display text letter by letter
+      for (let i = 0; i < chars.length; i++) {
+        const state = charDecodeStateRef.current[i];
         
-        for (let i = 0; i < chars.length; i++) {
-          const state = charStatesRef.current[i];
-          if (state.char === ' ') {
-            newText += ' ';
-            continue;
-          }
-
-          // Staggered character reveal with wave effect
-          const charProgress = (pass1Progress * chars.length + i * 0.15) / chars.length;
-          
-          if (charProgress > 0.3 && Math.random() > 0.7) {
-            // Some characters start to resolve
-            if (Math.random() > 0.5) {
-              newText += state.char;
-              state.decoded = true;
-              state.pass = 1;
-            } else {
-              newText += glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)];
-            }
-          } else {
-            // Still corrupted
-            newText += glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)];
-            allDecoded = false;
-          }
+        if (state.char === ' ') {
+          newText += ' ';
+          continue;
         }
-      }
-      // Pass 2: Major resolution (1.2-2.2s)
-      else if (elapsed < pass1Duration + pass2Duration) {
-        const pass2Progress = (elapsed - pass1Duration) / pass2Duration;
-        setDecodePhase(1);
-        
-        for (let i = 0; i < chars.length; i++) {
-          const state = charStatesRef.current[i];
-          if (state.char === ' ') {
-            newText += ' ';
-            continue;
-          }
 
-          const charProgress = (pass2Progress * chars.length + i * 0.2) / chars.length;
-          
-          if (charProgress > 0.4 || state.decoded) {
-            // Character resolved or resolving
-            if (Math.random() > 0.15) {
-              newText += state.char;
-              state.decoded = true;
-              state.pass = 2;
-            } else {
-              // Occasional glitch
-              newText += glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)];
-              allDecoded = false;
-            }
-          } else {
-            // Still resolving
-            if (Math.random() > 0.6) {
-              newText += state.char;
-            } else {
-              newText += glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)];
-            }
-            allDecoded = false;
-          }
+        // Characters before current index are fully decoded
+        if (i < targetCharIndex) {
+          newText += state.char;
+          state.decoded = true;
+          state.decodeProgress = 1;
         }
-      }
-      // Pass 3: Final lock (2.2-2.8s)
-      else {
-        const pass3Progress = (elapsed - pass1Duration - pass2Duration) / pass3Duration;
-        setDecodePhase(2);
-        
-        for (let i = 0; i < chars.length; i++) {
-          const state = charStatesRef.current[i];
-          if (state.char === ' ') {
-            newText += ' ';
-            continue;
-          }
-
-          const charProgress = (pass3Progress * chars.length + i * 0.1) / chars.length;
+        // Current character being decoded
+        else if (i === targetCharIndex) {
+          const charStartTime = targetCharIndex * timePerLetter;
+          const charElapsed = adjustedElapsed - charStartTime;
+          const charProgress = Math.min(charElapsed / charDecodeDuration, 1);
           
-          if (charProgress > 0.2 || state.decoded) {
+          state.decodeProgress = charProgress;
+          
+          if (charProgress >= 1) {
+            // Character is fully decoded
             newText += state.char;
             state.decoded = true;
-            state.pass = 3;
           } else {
-            // Final glitches resolving
-            if (Math.random() > 0.3) {
-              newText += state.char;
-              state.decoded = true;
+            // Character is in decode animation - show glitch transitioning to correct
+            if (charProgress < 0.3) {
+              // Early phase: mostly corrupted with occasional correct flashes
+              if (Math.random() > 0.7) {
+                newText += state.char;
+              } else {
+                newText += glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)];
+              }
+            } else if (charProgress < 0.7) {
+              // Mid phase: more correct, less corrupted
+              if (Math.random() > 0.4) {
+                newText += state.char;
+              } else {
+                newText += glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)];
+              }
             } else {
-              newText += glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)];
+              // Late phase: mostly correct, final glitches
+              if (Math.random() > 0.15) {
+                newText += state.char;
+              } else {
+                newText += glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)];
+              }
             }
             allDecoded = false;
           }
+        }
+        // Characters after current index are still corrupted
+        else {
+          newText += glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)];
+          allDecoded = false;
         }
       }
 
       setDisplayText(newText);
 
-      if (progress >= 1 || allDecoded) {
-        // Ensure final text is correct
+      // Update overall progress for visual effects
+      const decodedCount = charDecodeStateRef.current.filter(state => 
+        state.char === ' ' || state.decoded
+      ).length;
+      const progress = decodedCount / totalChars;
+      setOverallProgress(progress);
+
+      // Check if all characters are decoded
+      const allCharsDecoded = charDecodeStateRef.current.every(state => 
+        state.char === ' ' || state.decoded
+      );
+      
+      // Calculate total time needed
+      const totalTimeNeeded = initialCorruptionDelay + (totalChars * timePerLetter) + charDecodeDuration;
+      
+      if (allCharsDecoded && adjustedElapsed >= (totalChars * timePerLetter + charDecodeDuration - 50)) {
+        // Ensure final text is perfect
         setDisplayText(text);
         setDecodePhase(2);
-        onComplete();
+        setOverallProgress(1);
+        
+        // Small delay to show final decoded state
+        setTimeout(() => {
+          onComplete();
+        }, 200);
         return;
       }
 
@@ -193,16 +196,20 @@ const CinematicNameDecoder = ({
       initial={{ opacity: 0 }}
       animate={{ 
         opacity: 1,
-        filter: decodePhase === 2 ? 'blur(0px)' : decodePhase === 1 ? 'blur(0.3px)' : 'blur(0.8px)'
+        filter: decodePhase === 2 
+          ? 'blur(0px)' 
+          : decodePhase === 1 
+          ? `blur(${Math.max(0, 0.5 - overallProgress * 0.5)}px)`
+          : 'blur(0.8px)'
       }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.2 }}
       style={{
         textShadow: decodePhase === 2 
-          ? '0 0 80px rgba(255, 255, 255, 0.2), 0 0 140px rgba(255, 255, 255, 0.1), 0 0 200px rgba(255, 255, 255, 0.05)'
+          ? '0 0 80px rgba(255, 255, 255, 0.25), 0 0 140px rgba(255, 255, 255, 0.15), 0 0 200px rgba(255, 255, 255, 0.08)'
           : decodePhase === 1
-          ? '0 0 50px rgba(255, 255, 255, 0.15), 0 0 100px rgba(255, 255, 255, 0.08)'
+          ? `0 0 ${30 + overallProgress * 50}px rgba(255, 255, 255, ${0.1 + overallProgress * 0.15}), 0 0 ${60 + overallProgress * 80}px rgba(255, 255, 255, ${0.05 + overallProgress * 0.1})`
           : '0 0 30px rgba(255, 255, 255, 0.1), 0 0 60px rgba(255, 255, 255, 0.05)',
-        letterSpacing: decodePhase === 2 ? '0.08em' : '0.12em',
+        letterSpacing: decodePhase === 2 ? '0.08em' : '0.1em',
       }}
     >
       {displayText || text}
