@@ -40,7 +40,7 @@ const CinematicNameDecoder = ({
     const chars = text.split('');
     
     // IMAX timing - minimal initial delay for immediate start
-    const initialDelay = 20; // Nearly instant start
+    const initialDelay = 50; // Nearly instant start
     const timePerChar = 180; // 180ms per character - fast reveal
     
     startTimeRef.current = Date.now();
