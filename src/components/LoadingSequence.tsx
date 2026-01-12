@@ -29,21 +29,24 @@ const CinematicNameDecoder = ({
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
+      startTimeRef.current = null;
       return;
     }
 
     const chars = text.split('');
     
-    // IMAX timing - slow, deliberate, readable
-    const initialDelay = 400; // Intentional pause
+    // IMAX timing - reduced initial delay for faster start
+    const initialDelay = 100; // Reduced from 400ms for quicker start
     const timePerChar = 200; // 200ms per character - slow and cinematic
     
     startTimeRef.current = Date.now();
     setDisplayText('');
     setDecodeProgress(0);
 
+    let hasCompleted = false;
+
     const animate = () => {
-      if (!startTimeRef.current) return;
+      if (!startTimeRef.current || hasCompleted) return;
 
       const elapsed = Date.now() - startTimeRef.current;
       
@@ -105,6 +108,7 @@ const CinematicNameDecoder = ({
         // Ensure final text is perfect and locked
         setDisplayText(text);
         setDecodeProgress(1);
+        hasCompleted = true;
         
         // Brief hold to show locked state
         setTimeout(() => {
