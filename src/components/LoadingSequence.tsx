@@ -90,12 +90,7 @@ export const LoadingSequence = ({ onComplete }: LoadingSequenceProps) => {
   const [nameDecoded, setNameDecoded] = useState(false);
 
   useEffect(() => {
-    // Check for return visits - skip sequence if already seen this session
-    const hasSeenSequence = sessionStorage.getItem('portfolio-viewed-sequence');
-    if (hasSeenSequence === 'true') {
-      onComplete();
-      return;
-    }
+    // Always show the loading sequence on every page load/reload
 
     // Phase timing (IMAX cinematic pacing)
     const timeline = [
@@ -113,7 +108,6 @@ export const LoadingSequence = ({ onComplete }: LoadingSequenceProps) => {
 
     // Final exit
     const exitTimer = setTimeout(() => {
-      sessionStorage.setItem('portfolio-viewed-sequence', 'true');
       onComplete();
     }, 8000);
 
