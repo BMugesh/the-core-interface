@@ -1,351 +1,285 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { gsap } from 'gsap';
-import { DecodingText } from './DecodingText';
 
 interface LoadingSequenceProps {
   onComplete: () => void;
 }
 
-export const LoadingSequence = ({ onComplete }: LoadingSequenceProps) => {
-  // Phase states:
-  // -1 = black frame (0-1s)
-  // 0 = welcome text (1-2s)
-  // 1 = name decoding (2-3s)
-  // 1.5 = name hold (3-4.5s)
-  // 2 = transition statement (4.5-5.5s)
-  // 3 = camera handoff (5.5-6.5s)
-  // 4 = fade to hero
+// Cinematic name decoder - slow, controlled, 1-2 passes only
+const CinematicNameDecoder = ({ 
+  text, 
+  isActive,
+  onComplete 
+}: { 
+  text: string; 
+  isActive: boolean;
+  onComplete: () => void;
+}) => {
+  const [displayText, setDisplayText] = useState('');
+  const [phase, setPhase] = useState(0); // 0 = scrambled, 1 = partial, 2 = complete
   
-  const [phase, setPhase] = useState(-1);
-  const [showWelcome, setShowWelcome] = useState(false);
-  const [showNameDecode, setShowNameDecode] = useState(false);
-  const [nameDecoded, setNameDecoded] = useState(false);
-  const [showTransitionStatement, setShowTransitionStatement] = useState(false);
-  const [cameraHandoff, setCameraHandoff] = useState(false);
-  const [shouldExit, setShouldExit] = useState(false);
+  const glyphSets = useMemo(() => ({
+    corrupted: '△▢#@◊∆◇□■●○',
+    partial: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ ',
+  }), []);
 
   useEffect(() => {
-    // IMPORTANT: Always show the sequence on component mount
-    // This ensures users always see it on fresh page loads
-    // (Remove the return visit optimization for now to show the sequence)
+    if (!isActive) return;
+
+    const chars = text.split('');
     
-    // TODO: Implement proper return visit tracking that survives page refreshes
-    // (Would need localStorage instead of sessionStorage for true return visits)
+    // Phase 0: Initial corrupted state (0-400ms)
+    const corrupted = chars.map((char, i) => {
+      if (char === ' ') return ' ';
+      // 60% corrupted initially
+      return Math.random() > 0.4 
+        ? glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)]
+        : char;
+    }).join('');
+    setDisplayText(corrupted);
+    setPhase(0);
 
-    // Mark as viewed in this session
-    sessionStorage.setItem('portfolio-viewed-sequence', 'true');
+    // Phase 1: Partial decode (400-800ms)
+    const timer1 = setTimeout(() => {
+      const partial = chars.map((char, i) => {
+        if (char === ' ') return ' ';
+        // 20% corrupted
+        return Math.random() > 0.8 
+          ? glyphSets.corrupted[Math.floor(Math.random() * glyphSets.corrupted.length)]
+          : char;
+      }).join('');
+      setDisplayText(partial);
+      setPhase(1);
+    }, 500);
 
-    // Master timeline using GSAP for deterministic timing
-    const timeline = gsap.timeline();
-
-    // Phase 1: Black Frame (0-1s) - Extended pause
-    // Already in black state
-
-    // Phase 2: Welcome Text (1-2s)
-    timeline.to(
-      {},
-      {
-        onStart: () => {
-          setPhase(0);
-          setShowWelcome(true);
-        },
-        duration: 0.001,
-      },
-      1.0
-    );
-
-    // Phase 3: Name Decoding (2-3s) - Extended, deliberate
-    timeline.to(
-      {},
-      {
-        onStart: () => {
-          setPhase(1);
-          setShowNameDecode(true);
-        },
-        duration: 0.001,
-      },
-      2.0
-    );
-
-    // Phase 3.5: Name Hold (3-4.5s) - Stable, clean
-    timeline.to(
-      {},
-      {
-        onStart: () => {
-          setPhase(1.5);
-          setNameDecoded(true);
-        },
-        duration: 0.001,
-      },
-      3.0
-    );
-
-    // Phase 4: Transition Statement (4.5-5.5s)
-    timeline.to(
-      {},
-      {
-        onStart: () => {
-          setPhase(2);
-          setShowTransitionStatement(true);
-        },
-        duration: 0.001,
-      },
-      4.5
-    );
-
-    // Phase 5: Camera Handoff (5.5-6.5s)
-    timeline.to(
-      {},
-      {
-        onStart: () => {
-          setPhase(3);
-          setCameraHandoff(true);
-        },
-        duration: 0.001,
-      },
-      5.5
-    );
-
-    // Phase 6: Exit to Hero (6.5s)
-    timeline.to(
-      {},
-      {
-        onStart: () => {
-          setPhase(4);
-          setShouldExit(true);
-        },
-        duration: 0.001,
-        onComplete: () => {
-          setTimeout(() => onComplete(), 400);
-        },
-      },
-      6.5
-    );
+    // Phase 2: Complete (800ms+)
+    const timer2 = setTimeout(() => {
+      setDisplayText(text);
+      setPhase(2);
+      onComplete();
+    }, 1000);
 
     return () => {
-      timeline.kill();
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, [isActive, text, glyphSets, onComplete]);
+
+  return (
+    <motion.div
+      className="text-5xl md:text-7xl lg:text-8xl font-display font-bold tracking-[0.08em] text-white select-none"
+      initial={{ opacity: 0 }}
+      animate={{ 
+        opacity: 1,
+        filter: phase === 2 ? 'blur(0px)' : 'blur(0.5px)'
+      }}
+      transition={{ duration: 0.4 }}
+      style={{
+        textShadow: phase === 2 
+          ? '0 0 60px rgba(255, 255, 255, 0.15), 0 0 120px rgba(255, 255, 255, 0.05)'
+          : '0 0 30px rgba(255, 255, 255, 0.1)',
+      }}
+    >
+      {displayText}
+    </motion.div>
+  );
+};
+
+export const LoadingSequence = ({ onComplete }: LoadingSequenceProps) => {
+  const [phase, setPhase] = useState(0);
+  const [nameDecoded, setNameDecoded] = useState(false);
+
+  useEffect(() => {
+    // Check for return visits - skip sequence if already seen this session
+    const hasSeenSequence = sessionStorage.getItem('portfolio-viewed-sequence');
+    if (hasSeenSequence === 'true') {
+      onComplete();
+      return;
+    }
+
+    // Phase timing (IMAX cinematic pacing)
+    const timeline = [
+      { phase: 1, delay: 900 },    // End black, show welcome
+      { phase: 2, delay: 2200 },   // End welcome, start name decode
+      { phase: 3, delay: 3400 },   // Name decoded, hold
+      { phase: 4, delay: 5000 },   // Show "Entering the World"
+      { phase: 5, delay: 6200 },   // Camera push begins
+      { phase: 6, delay: 7400 },   // Exit
+    ];
+
+    const timers = timeline.map(({ phase: p, delay }) => 
+      setTimeout(() => setPhase(p), delay)
+    );
+
+    // Final exit
+    const exitTimer = setTimeout(() => {
+      sessionStorage.setItem('portfolio-viewed-sequence', 'true');
+      onComplete();
+    }, 8000);
+
+    return () => {
+      timers.forEach(clearTimeout);
+      clearTimeout(exitTimer);
     };
   }, [onComplete]);
 
   return (
     <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black"
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.8, ease: 'easeInOut' }}
-      animate={{ opacity: shouldExit ? 0 : 1 }}
+      animate={{ opacity: phase >= 6 ? 0 : 1 }}
+      transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
     >
       {/* ========================================
-          PHASE 1: Black Frame (0-1s)
-          Absolute black, no UI, no sound
-          Pure pause before system "wakes up"
+          PHASE 1: IMAX BLACK (0-0.9s)
+          Pure stillness. Earn attention.
           ======================================== */}
-      {phase === -1 && <div className="absolute inset-0 bg-black" />}
+      {phase === 0 && (
+        <div className="absolute inset-0 bg-black" />
+      )}
 
       {/* ========================================
-          PHASE 2: Opening Invocation (1-2s)
+          PHASE 2: OPENING LINE (0.9-2.2s)
           "WELCOME TO THE WORLD OF"
-          Fade in then fade out
+          Opacity fade only. No movement.
           ======================================== */}
-      {phase >= 0 && phase < 1 && (
+      {phase === 1 && (
         <motion.div
           className="absolute inset-0 flex items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, ease: 'easeOut' }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
         >
-          <motion.div
-            className="text-center"
+          <motion.span
+            className="font-display text-lg md:text-xl text-white/60 tracking-[0.4em] uppercase"
             initial={{ opacity: 0 }}
-            animate={showWelcome ? { opacity: 1 } : {}}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, ease: 'easeInOut' }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.1 }}
           >
-            <div className="font-mono text-sm md:text-lg text-white/70 tracking-[0.3em] uppercase">
-              Welcome to the World of
-            </div>
-          </motion.div>
+            Welcome to the World of
+          </motion.span>
         </motion.div>
       )}
 
       {/* ========================================
-          PHASE 3: Extended IMAX Name Decoding (2-3s)
-          Multiple controlled passes
-          No rapid flicker, slow and intentional
+          PHASE 3: CINEMATIC NAME DECODING (2.2-3.4s)
+          Slow, deliberate, 1-2 correction passes
+          Like signal locking onto focus
           ======================================== */}
-      {phase >= 1 && phase < 1.5 && (
+      {phase === 2 && (
         <motion.div
-          className="absolute inset-0 flex items-center justify-center flex-col gap-8"
+          className="absolute inset-0 flex items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
+          transition={{ duration: 0.3 }}
         >
-          {/* Decoded name - extended 5-step progression */}
-          <div className="h-24 flex items-center justify-center">
-            {showNameDecode && (
-              <DecodingText
-                text="BALA MUGESH M K"
-                className="text-4xl md:text-6xl font-mono font-bold tracking-[0.15em] text-white"
-                passes={5}
-                duration={1000}
-                delay={50}
-                onComplete={() => {
-                  // Name is locked
-                }}
-              />
-            )}
-          </div>
-        </motion.div>
-      )}
-
-      {/* ========================================
-          PHASE 3.5: Decoded Name Hold (3-4.5s)
-          Stable, clean, perfectly locked
-          Lets viewer absorb name as title card
-          ======================================== */}
-      {phase >= 1.5 && phase < 2 && (
-        <motion.div
-          className="absolute inset-0 flex items-center justify-center flex-col gap-0"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
-        >
-          {/* Stable name display */}
-          <div className="h-24 flex items-center justify-center">
-            <motion.div
-              className="text-4xl md:text-6xl font-mono font-bold tracking-[0.15em] text-white"
-              initial={{ opacity: 0, filter: 'blur(4px)' }}
-              animate={{ opacity: 1, filter: 'blur(0px)' }}
-              transition={{ duration: 0.4, ease: 'easeOut' }}
-              style={{
-                textShadow: '0 0 30px rgba(255, 255, 255, 0.08), 0 0 60px rgba(255, 255, 255, 0.04)',
-              }}
-            >
-              BALA MUGESH M K
-            </motion.div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* ========================================
-          PHASE 4: Transition Statement (4.5-5.5s)
-          "ENTERING THE WORLD" fades in below
-          Both hold briefly, then statement fades out
-          ======================================== */}
-      {phase >= 2 && phase < 3 && (
-        <motion.div
-          className="absolute inset-0 flex items-center justify-center flex-col gap-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
-        >
-          {/* Stable name */}
-          <div className="h-24 flex items-center justify-center">
-            <motion.div
-              className="text-4xl md:text-6xl font-mono font-bold tracking-[0.15em] text-white"
-              style={{
-                textShadow: '0 0 30px rgba(255, 255, 255, 0.08), 0 0 60px rgba(255, 255, 255, 0.04)',
-              }}
-            >
-              BALA MUGESH M K
-            </motion.div>
-          </div>
-
-          {/* Transition statement - fades in then out */}
-          <motion.div
-            className="font-mono text-sm md:text-base text-white/60 tracking-[0.2em] uppercase"
-            initial={{ opacity: 0, y: 10 }}
-            animate={showTransitionStatement ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-            transition={{ duration: 0.5, ease: 'easeInOut' }}
-          >
-            Entering the World
-          </motion.div>
-        </motion.div>
-      )}
-
-      {/* ========================================
-          PHASE 5: IMAX Camera Handoff (5.5-6.5s)
-          Slow forward drift through stable title
-          Subtle HUD lines appear then dissolve
-          Continuous movement into world
-          ======================================== */}
-      {phase >= 3 && phase < 4 && (
-        <motion.div
-          className="absolute inset-0 flex items-center justify-center flex-col gap-0"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.1, ease: 'easeOut' }}
-        >
-          {/* Camera drift container */}
-          <motion.div
-            className="absolute inset-0 flex items-center justify-center"
-            animate={{
-              scale: cameraHandoff ? 1.06 : 1,
-            }}
-            transition={{ duration: 1.0, ease: 'easeInOut' }}
-          >
-            {/* Name stays stable during drift */}
-            <div className="h-24 flex items-center justify-center relative z-10">
-              <div
-                className="text-4xl md:text-6xl font-mono font-bold tracking-[0.15em] text-white"
-                style={{
-                  textShadow: '0 0 30px rgba(255, 255, 255, 0.08), 0 0 60px rgba(255, 255, 255, 0.04)',
-                }}
-              >
-                BALA MUGESH M K
-              </div>
-            </div>
-
-            {/* Upper HUD alignment line */}
-            <motion.div
-              className="absolute top-1/3 left-1/2 -translate-x-1/2 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: '280px', opacity: 0.3 }}
-              transition={{ duration: 0.7, ease: 'easeOut', delay: 0.1 }}
-            />
-
-            {/* Lower HUD alignment line */}
-            <motion.div
-              className="absolute bottom-1/3 left-1/2 -translate-x-1/2 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: '280px', opacity: 0.3 }}
-              transition={{ duration: 0.7, ease: 'easeOut', delay: 0.2 }}
-            />
-
-            {/* HUD lines fade out */}
-            <motion.div
-              className="absolute inset-0"
-              initial={{ opacity: 1 }}
-              animate={{ opacity: 0 }}
-              transition={{ duration: 0.6, delay: 0.5, ease: 'easeInOut' }}
-            />
-          </motion.div>
-
-          {/* Soft vignette during handoff */}
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-b from-transparent via-black/5 to-black/20 pointer-events-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.2 }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
+          <CinematicNameDecoder 
+            text="BALA MUGESH M K"
+            isActive={phase === 2}
+            onComplete={() => setNameDecoded(true)}
           />
         </motion.div>
       )}
 
       {/* ========================================
-          PHASE 6: Exit to Hero
-          Seamless fade to hero section
+          PHASE 4: NAME HOLD (3.4-5s)
+          Stable. Clean. Let it breathe.
           ======================================== */}
-      {phase >= 4 && (
+      {phase === 3 && (
         <motion.div
-          className="absolute inset-0 bg-black"
+          className="absolute inset-0 flex items-center justify-center"
           initial={{ opacity: 0 }}
-          animate={{ opacity: shouldExit ? 1 : 0 }}
-          transition={{ duration: 0.4, ease: 'easeInOut' }}
-        />
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
+        >
+          <motion.div
+            className="text-5xl md:text-7xl lg:text-8xl font-display font-bold tracking-[0.08em] text-white"
+            style={{
+              textShadow: '0 0 60px rgba(255, 255, 255, 0.15), 0 0 120px rgba(255, 255, 255, 0.05)',
+            }}
+          >
+            BALA MUGESH M K
+          </motion.div>
+        </motion.div>
       )}
+
+      {/* ========================================
+          PHASE 5: WORLD ENTRY LINE (5-6.2s)
+          "ENTERING THE WORLD" appears below
+          Narrative, not technical
+          ======================================== */}
+      {phase === 4 && (
+        <motion.div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
+        >
+          <motion.div
+            className="text-5xl md:text-7xl lg:text-8xl font-display font-bold tracking-[0.08em] text-white"
+            style={{
+              textShadow: '0 0 60px rgba(255, 255, 255, 0.15), 0 0 120px rgba(255, 255, 255, 0.05)',
+            }}
+          >
+            BALA MUGESH M K
+          </motion.div>
+          
+          <motion.span
+            className="font-display text-sm md:text-base text-white/50 tracking-[0.35em] uppercase"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            Entering the World
+          </motion.span>
+        </motion.div>
+      )}
+
+      {/* ========================================
+          PHASE 6: CAMERA PUSH (6.2-7.4s)
+          Slow forward drift. Subtle HUD lines.
+          No flash. No cut. Continuous.
+          ======================================== */}
+      {phase === 5 && (
+        <motion.div
+          className="absolute inset-0 flex items-center justify-center"
+          initial={{ opacity: 1, scale: 1 }}
+          animate={{ opacity: 1, scale: 1.08 }}
+          transition={{ duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
+        >
+          {/* Subtle alignment lines - appear then dissolve */}
+          <motion.div
+            className="absolute top-1/3 left-1/2 -translate-x-1/2 h-px w-0 bg-gradient-to-r from-transparent via-white/15 to-transparent"
+            animate={{ width: '300px', opacity: [0, 0.3, 0] }}
+            transition={{ duration: 1, ease: 'easeInOut' }}
+          />
+          <motion.div
+            className="absolute bottom-1/3 left-1/2 -translate-x-1/2 h-px w-0 bg-gradient-to-r from-transparent via-white/15 to-transparent"
+            animate={{ width: '300px', opacity: [0, 0.3, 0] }}
+            transition={{ duration: 1, ease: 'easeInOut', delay: 0.1 }}
+          />
+          
+          {/* Name continues stable during drift */}
+          <motion.div
+            className="text-5xl md:text-7xl lg:text-8xl font-display font-bold tracking-[0.08em] text-white"
+            animate={{ opacity: [1, 0.8, 0] }}
+            transition={{ duration: 1.2, ease: 'easeInOut' }}
+            style={{
+              textShadow: '0 0 60px rgba(255, 255, 255, 0.15), 0 0 120px rgba(255, 255, 255, 0.05)',
+            }}
+          >
+            BALA MUGESH M K
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Subtle vignette throughout */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.3) 100%)',
+        }}
+      />
     </motion.div>
   );
 };
-
-
-

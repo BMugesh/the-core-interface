@@ -2,6 +2,7 @@ import { motion, useInView } from 'framer-motion';
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { IMAXBacklightConfig } from '@/lib/imax-backlight';
+import { MagneticButton } from './MagneticButton';
 
 export const HeroSection = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -137,16 +138,24 @@ export const HeroSection = () => {
 
       {/* Minimal scroll indicator - appear after reveal completes */}
       <motion.div
-        className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30"
+        className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4"
         initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 0.3 } : {}}
+        animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.8, delay: 3.2 }}
       >
-        <div className="font-mono text-xs text-white/50">SCROLL TO EXPLORE</div>
+        <MagneticButton 
+          strength={0.4}
+          className="cursor-pointer"
+          onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
+        >
+          <div className="px-6 py-3 border border-neon-cyan/30 rounded-sm bg-void-deep/50 backdrop-blur-sm hover:border-neon-cyan/60 transition-colors duration-300">
+            <span className="font-mono text-xs text-white/70 tracking-[0.2em] uppercase">Enter the Lab</span>
+          </div>
+        </MagneticButton>
         <motion.div
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className="w-px h-8 bg-gradient-to-b from-neon-cyan/60 to-transparent"
+          className="w-px h-8 bg-gradient-to-b from-neon-cyan/40 to-transparent opacity-50"
         />
       </motion.div>
     </section>
