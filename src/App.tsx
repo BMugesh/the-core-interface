@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SmoothScroll } from "./components/SmoothScroll";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import "./styles/imax-backlight.css";
 
 const queryClient = new QueryClient();
 

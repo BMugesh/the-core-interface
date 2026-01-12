@@ -1,6 +1,7 @@
 import { motion, useInView } from 'framer-motion';
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
+import { IMAXBacklightConfig } from '@/lib/imax-backlight';
 
 export const HeroSection = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -50,6 +51,15 @@ export const HeroSection = () => {
         />
       </div>
 
+      {/* IMAX Backlight Layer - Soft projector-style glow */}
+      <div
+        className="absolute inset-0 pointer-events-none hero-layer z-5"
+        data-speed="0.3"
+        style={{
+          background: IMAXBacklightConfig.glow,
+        }}
+      />
+
       {/* Main Content - Camera transmission metaphor */}
       <div
         ref={contentRef}
@@ -69,10 +79,13 @@ export const HeroSection = () => {
         {/* Name - focus pull (clarity + contrast tighten) */}
         <div className="flex flex-col items-center gap-2">
           <motion.h1
-            className="font-mono text-5xl md:text-7xl font-bold text-white tracking-wide"
+            className="font-mono text-5xl md:text-7xl font-bold text-white tracking-wide drop-shadow-lg"
             initial={{ opacity: 0.3, filter: 'blur(8px)' }}
             animate={isInView ? { opacity: 1, filter: 'blur(0px)' } : {}}
             transition={{ duration: 1.6, delay: 0.2, ease: 'easeOut' }}
+            style={{
+              textShadow: '0 0 30px rgba(255, 255, 255, 0.1), 0 0 60px rgba(255, 255, 255, 0.05)',
+            }}
           >
             BALA MUGESH M K
           </motion.h1>

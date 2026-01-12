@@ -1,0 +1,204 @@
+/* ========================================
+   IMAX BACKLIGHT SYSTEM - GLOBAL STYLES
+   Cinematic glow effects for all sections
+   ======================================== */
+
+/* IMAX Backlight Container */
+.imax-backlight {
+  position: relative;
+}
+
+/* Soft projector-style glow layer */
+.imax-backlight-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 40%,
+    transparent 70%
+  );
+}
+
+/* Variant: Warm tone (for about/contact sections) */
+.imax-backlight-glow.warm {
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 200, 150, 0.08) 0%,
+    rgba(255, 200, 150, 0.02) 40%,
+    transparent 70%
+  );
+}
+
+/* Variant: Cool tone (for skills/projects sections) */
+.imax-backlight-glow.cool {
+  background: radial-gradient(
+    circle at center,
+    rgba(150, 200, 255, 0.08) 0%,
+    rgba(150, 200, 255, 0.02) 40%,
+    transparent 70%
+  );
+}
+
+/* Content layer positioned above glow */
+.imax-backlight-content {
+  position: relative;
+  z-index: 10;
+}
+
+/* ========================================
+   BREATHING ANIMATIONS
+   Subtle, barely perceptible intensity shifts
+   ======================================== */
+
+@keyframes imax-breathing {
+  0%, 100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 1.15;
+    filter: brightness(1.05);
+  }
+}
+
+@keyframes imax-breathing-slow {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1.2;
+  }
+}
+
+/* Apply breathing to backlight glow */
+.imax-backlight-glow.breathing {
+  animation: imax-breathing 4s ease-in-out infinite;
+}
+
+.imax-backlight-glow.breathing-slow {
+  animation: imax-breathing-slow 6s ease-in-out infinite;
+}
+
+/* ========================================
+   HERO SECTION - IMAX STYLING
+   ======================================== */
+
+.hero-imax-title {
+  /* Cinematic text shadow depth */
+  text-shadow:
+    0 0 20px rgba(255, 255, 255, 0.08),
+    0 0 40px rgba(255, 255, 255, 0.04),
+    0 2px 10px rgba(0, 0, 0, 0.3);
+  
+  /* Subtle character spacing for IMAX feel */
+  letter-spacing: 0.15em;
+  
+  /* Smooth rendering for precise character display */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ========================================
+   SECTION BACKLIGHT OVERLAY
+   Apply to major sections for consistency
+   ======================================== */
+
+.section-backlight {
+  position: relative;
+}
+
+.section-backlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(
+    ellipse 80% 50% at center 50%,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(255, 255, 255, 0.02) 30%,
+    transparent 80%
+  );
+}
+
+/* Text elements within backlit sections gain subtle glow */
+.section-backlight h2,
+.section-backlight h3,
+.section-backlight h1 {
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+}
+
+/* ========================================
+   CINEMATIC TRANSITIONS
+   Smooth entry/exit for sections
+   ======================================== */
+
+@keyframes cinematic-entrance {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes cinematic-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.98);
+  }
+}
+
+.cinematic-entrance {
+  animation: cinematic-entrance 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.cinematic-exit {
+  animation: cinematic-exit 0.8s cubic-bezier(0.77, 0.2, 0.83, 1) forwards;
+}
+
+/* ========================================
+   DEPTH AND ATMOSPHERE
+   Vignette and subtle ambient effects
+   ======================================== */
+
+@keyframes ambient-glow {
+  0%, 100% {
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.ambient-vignette {
+  animation: ambient-glow 8s ease-in-out infinite;
+}
+
+/* ========================================
+   PRECISION TYPOGRAPHY FOR IMAX
+   ======================================== */
+
+.imax-text-sharp {
+  /* Ensure text is crisp and clear for cinematic presentation */
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'kern' 1;
+}
+
+.imax-tracking {
+  /* Classic IMAX title spacing */
+  letter-spacing: 0.12em;
+  word-spacing: 0.3em;
+}
