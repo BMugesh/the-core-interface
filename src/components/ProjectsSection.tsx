@@ -49,7 +49,7 @@ const projects: Project[] = [
 const ExperimentModule = ({ project, index }: { project: Project; index: number }) => {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { margin: "-50px" });
-  
+
   useEffect(() => {
     if (!ref.current || !isInView) return;
 
@@ -83,8 +83,8 @@ const ExperimentModule = ({ project, index }: { project: Project; index: number 
       className="relative group"
       initial={{ opacity: 0, y: 40 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ 
-        duration: 0.8, 
+      transition={{
+        duration: 0.8,
         delay: index * 0.1,
         ease: [0.16, 1, 0.3, 1]
       }}
@@ -92,31 +92,31 @@ const ExperimentModule = ({ project, index }: { project: Project; index: number 
     >
       {/* Containment Frame */}
       <div className="relative p-6 bg-void-deep/80 border border-white/10 backdrop-blur-md overflow-hidden transition-all duration-500 group-hover:border-neon-cyan/30">
-        
+
         {/* Hover Highlight */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        
+
         {/* Technical Header */}
         <div className="flex justify-between items-start mb-4 border-b border-white/5 pb-2">
           <span className="font-mono text-[10px] text-white/40 tracking-widest">{project.id}</span>
           <span className={`font-mono text-[10px] tracking-widest uppercase ${getStatusColor(project.status)}`}>
-             [{project.status}]
+            [{project.status}]
           </span>
         </div>
 
         {/* Project Title */}
         <div className="mb-2">
-          <FocusReveal 
-            text={project.name} 
+          <FocusReveal
+            text={project.name}
             className="font-display text-xl text-white font-bold group-hover:text-neon-cyan transition-colors"
             delay={index * 0.1 + 0.2}
             blurStrength={8}
           />
         </div>
-        
+
         {/* Purpose */}
         <div className="mb-6">
-          <FocusReveal 
+          <FocusReveal
             text={project.purpose}
             className="font-sans text-sm text-gray-400 leading-relaxed"
             delay={index * 0.1 + 0.4}
@@ -157,10 +157,10 @@ export const ProjectsSection = () => {
 
   return (
     <section id="projects" ref={sectionRef} className="section relative min-h-screen py-32 px-6">
-      <ContextualHUD 
-        title="PROTOCOLS" 
-        code="SYS.03" 
-        alignment="right" 
+      <ContextualHUD
+        title="PROTOCOLS"
+        code="SYS.03"
+        alignment="right"
         className="hidden md:block"
       />
 
@@ -180,7 +180,7 @@ export const ProjectsSection = () => {
             </span>
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-white tracking-tight">
-            <IntelligentText 
+            <IntelligentText
               type="heading"
               hasVisited={!isFirstVisit}
               delay={0.4}
@@ -196,14 +196,14 @@ export const ProjectsSection = () => {
           ))}
         </div>
       </div>
-      
+
       {/* Background Parallax Layer */}
-      <div className="section-parallax-layer absolute inset-0 pointer-events-none opacity-[0.02]" 
-           data-parallax-speed="0.2"
-           style={{ 
-             backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
-             backgroundSize: '40px 40px' 
-           }} 
+      <div className="section-parallax-layer absolute inset-0 pointer-events-none opacity-[0.02]"
+        data-parallax-speed="0.2"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+          backgroundSize: '40px 40px'
+        }}
       />
     </section>
   );

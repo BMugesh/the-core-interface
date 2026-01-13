@@ -21,7 +21,7 @@ gsap.registerPlugin(ScrollTrigger);
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const performance = usePerformanceMonitor();
-  
+
   // Initialize cinematic scroll animations with performance profile
   useCinematicScroll(performance.profile);
 
@@ -38,10 +38,10 @@ const Index = () => {
           <CursorEffects />
           <ParticleBackground />
           <HUDNavigation />
-          
+
           {/* Section interconnection visuals */}
           <SectionInterconnections />
-          
+
           <motion.main
             className="relative z-10"
             initial={{ opacity: 0 }}

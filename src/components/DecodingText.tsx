@@ -1,183 +1,161 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
 
 interface DecodingTextProps {
   text: string;
   className?: string;
-  passes?: number;
   duration?: number;
   delay?: number;
   onComplete?: () => void;
-  enableGlitch?: boolean;
-  enableColor?: boolean;
-  intensity?: 'low' | 'medium' | 'high';
+  resolveDirection?: 'left-to-right' | 'center-out';
 }
 
-// Enhanced glyph sets for more cyberpunk feel
+// IMAX-grade glyph system - intentional, engineered symbols
 const GLYPH_SETS = {
+  // Technical alphanumeric glyphs
   tech: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&',
+  // Abstract block / corrupted glyphs
   corrupted: '▓░╫▯╪╬╧╨╩╝╜╛╞╟╠╡╢╣║',
+  // Geometric symbols
   symbols: '◊◇□■●○△▲▼▽◈◉◎◐◑◒◓◔◕',
+  // Mixed technical-symbol sets
   mixed: '█▓▒░╠╩╦╣═║$#@%&©®™×÷±∓∑√∞≈≠≤≥'
 };
 
-type GlyphSet = keyof typeof GLYPH_SETS;
+// Glyph progression: corrupted → symbols → mixed → tech → final character
+const GLYPH_PROGRESSION = [
+  GLYPH_SETS.corrupted,
+  GLYPH_SETS.symbols,
+  GLYPH_SETS.mixed,
+  GLYPH_SETS.tech
+];
 
 export const DecodingText = ({
   text,
   className = '',
-  passes = 2,
-  duration = 600,
+  duration = 2000,
   delay = 0,
   onComplete,
-  enableGlitch = true,
-  enableColor = true,
-  intensity = 'medium'
+  resolveDirection = 'left-to-right'
 }: DecodingTextProps) => {
   const [displayText, setDisplayText] = useState('');
-  const [phase, setPhase] = useState('idle'); // idle, decoding, locked
-  const [colorVariant, setColorVariant] = useState(0);
+  const [isDecoding, setIsDecoding] = useState(false);
   const startTimeRef = useRef<number | null>(null);
-  const isStartedRef = useRef(false);
-  const glitchSeedRef = useRef<number>(0);
+  const animationFrameRef = useRef<number | null>(null);
+  const hasCompletedRef = useRef(false);
 
-  const intensityMultipliers = {
-    low: 0.5,
-    medium: 1,
-    high: 1.5
+  // Calculate character resolve order based on direction
+  const getCharacterResolveOrder = (length: number): number[] => {
+    if (resolveDirection === 'center-out') {
+      const order: number[] = [];
+      const mid = Math.floor(length / 2);
+      for (let offset = 0; offset < length; offset++) {
+        if (mid - offset >= 0) order.push(mid - offset);
+        if (mid + offset < length && offset !== 0) order.push(mid + offset);
+      }
+      return order;
+    }
+    // Default: left-to-right
+    return Array.from({ length }, (_, i) => i);
   };
-
-  const glyphProgression: GlyphSet[] = ['corrupted', 'symbols', 'mixed', 'tech'];
 
   useEffect(() => {
     const startTimer = setTimeout(() => {
-      isStartedRef.current = true;
+      setIsDecoding(true);
       startTimeRef.current = performance.now();
-      setPhase('decoding');
     }, delay);
 
     return () => clearTimeout(startTimer);
   }, [delay]);
 
-  // Color cycling effect
   useEffect(() => {
-    if (phase !== 'decoding' || !enableColor) return;
+    if (!isDecoding || hasCompletedRef.current) return;
 
-    const colorTimer = setInterval(() => {
-      setColorVariant(prev => (prev + 1) % 3);
-    }, 100);
+    const chars = text.split('');
+    const resolveOrder = getCharacterResolveOrder(chars.length);
+    const timePerChar = duration / chars.length;
 
-    return () => clearInterval(colorTimer);
-  }, [phase, enableColor]);
-
-  useEffect(() => {
-    if (phase !== 'decoding' || !isStartedRef.current) return;
-
-    const animationFrame = setInterval(() => {
-      if (!startTimeRef.current) return;
+    const animate = () => {
+      if (!startTimeRef.current || hasCompletedRef.current) return;
 
       const elapsed = performance.now() - startTimeRef.current;
-      const progress = Math.min(elapsed / duration, 1);
-      const intensity_mult = intensityMultipliers[intensity];
+      const overallProgress = Math.min(elapsed / duration, 1);
 
       let newText = '';
-      const charCount = text.length;
+      let allResolved = true;
 
-      for (let i = 0; i < charCount; i++) {
-        // Staggered character reveal with wave effect
-        const baseCharProgress = (progress * passes + (i * 0.08) / intensity_mult) % 1;
-        const charProgress = Math.sin(baseCharProgress * Math.PI) * baseCharProgress;
+      for (let i = 0; i < chars.length; i++) {
+        const char = chars[i];
 
-        let char = text[i];
-
-        if (charProgress > 0.9) {
-          // Fully resolved - final character
-          char = text[i];
-        } else if (charProgress > 0.65) {
-          // Late decode phase - mostly correct with occasional corruption
-          if (enableGlitch && Math.random() > 0.85) {
-            const glyphSet = GLYPH_SETS.tech;
-            char = glyphSet[Math.floor(Math.random() * glyphSet.length)];
-          } else {
-            char = text[i];
-          }
-        } else if (charProgress > 0.35) {
-          // Mid-decode phase - character corruption and transitions
-          const passIndex = Math.floor(charProgress * glyphProgression.length);
-          const selectedSet = glyphProgression[Math.min(passIndex, glyphProgression.length - 1)];
-          const glyphSet = GLYPH_SETS[selectedSet];
-          const offset = (glitchSeedRef.current + i + Math.floor(charProgress * 8)) % glyphSet.length;
-          char = glyphSet[offset];
-        } else if (charProgress > 0) {
-          // Early scramble - full chaos
-          const allGlyphs = Object.values(GLYPH_SETS).join('');
-          char = allGlyphs[Math.floor(Math.random() * allGlyphs.length)];
-        } else {
-          // Not yet active
-          char = ' ';
+        // Preserve spaces
+        if (char === ' ') {
+          newText += ' ';
+          continue;
         }
 
-        newText += char;
+        // Calculate when this character should start resolving
+        const charIndex = resolveOrder.indexOf(i);
+        const charStartTime = charIndex * timePerChar;
+        const charElapsed = elapsed - charStartTime;
+
+        if (charElapsed < 0) {
+          // Character hasn't started decoding yet - show initial glyph
+          const initialGlyph = GLYPH_SETS.corrupted[i % GLYPH_SETS.corrupted.length];
+          newText += initialGlyph;
+          allResolved = false;
+        } else if (charElapsed < timePerChar) {
+          // Character is actively decoding
+          const charProgress = charElapsed / timePerChar;
+
+          if (charProgress >= 0.95) {
+            // Final lock - character is resolved
+            newText += char;
+          } else {
+            // Glyph cycling phase
+            // Progress through glyph sets: corrupted → symbols → mixed → tech
+            const glyphSetIndex = Math.min(
+              Math.floor(charProgress * GLYPH_PROGRESSION.length),
+              GLYPH_PROGRESSION.length - 1
+            );
+            const currentGlyphSet = GLYPH_PROGRESSION[glyphSetIndex];
+
+            // Cycle through glyphs in current set (slowing down as we progress)
+            const cycleSpeed = Math.max(1, 8 - Math.floor(charProgress * 7));
+            const glyphIndex = Math.floor((elapsed / (50 * cycleSpeed)) + i) % currentGlyphSet.length;
+
+            newText += currentGlyphSet[glyphIndex];
+            allResolved = false;
+          }
+        } else {
+          // Character is fully resolved and locked
+          newText += char;
+        }
       }
 
-      glitchSeedRef.current = (glitchSeedRef.current + 1) % 256;
       setDisplayText(newText);
 
-      if (progress >= 1) {
+      // Check if all characters are resolved
+      if (allResolved && overallProgress >= 1) {
         setDisplayText(text);
-        setPhase('locked');
+        hasCompletedRef.current = true;
         if (onComplete) onComplete();
+        return;
       }
-    }, 20);
 
-    return () => clearInterval(animationFrame);
-  }, [phase, text, duration, passes, onComplete, enableGlitch, intensity]);
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
 
-  // Color class mapping based on phase
-  const getColorClass = () => {
-    if (!enableColor) return '';
-    
-    if (phase === 'locked') {
-      return 'text-white';
-    }
+    animationFrameRef.current = requestAnimationFrame(animate);
 
-    const colors = [
-      'text-cyan-400',
-      'text-green-400',
-      'text-white'
-    ];
-    return colors[colorVariant];
-  };
-
-  // Glow effect during decode
-  const getGlowStyle = () => {
-    if (phase === 'locked') {
-      return {
-        textShadow: '0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.4)',
-      };
-    }
-
-    if (enableColor) {
-      const glows = [
-        '0 0 15px rgba(34, 211, 238, 0.8), 0 0 30px rgba(34, 211, 238, 0.4)',
-        '0 0 15px rgba(74, 222, 128, 0.8), 0 0 30px rgba(74, 222, 128, 0.4)',
-        '0 0 10px rgba(255, 255, 255, 0.5)',
-      ];
-      return { textShadow: glows[colorVariant] };
-    }
-
-    return { textShadow: '0 0 10px rgba(255, 255, 255, 0.5)' };
-  };
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [isDecoding, text, duration, onComplete, resolveDirection]);
 
   return (
-    <motion.span
-      className={`inline-block font-mono tracking-wide transition-colors duration-100 ${getColorClass()} ${className}`}
-      style={getGlowStyle()}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: phase === 'idle' ? 0 : 1 }}
-      transition={{ duration: 0.3 }}
-    >
-      {displayText || text}
-    </motion.span>
+    <span className={`inline-block font-mono ${className}`}>
+      {displayText || text.split('').map((c) => c === ' ' ? ' ' : '·').join('')}
+    </span>
   );
 };

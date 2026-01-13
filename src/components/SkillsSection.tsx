@@ -55,44 +55,44 @@ const RoleModulePanel = ({
   isInView: boolean;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
-  
+
   return (
     <motion.div
       ref={ref}
       className="relative w-full"
       initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
       animate={isInView ? { opacity: 1, x: 0 } : {}}
-      transition={{ 
-        duration: 0.8, 
+      transition={{
+        duration: 0.8,
         delay: index * 0.15,
         ease: [0.16, 1, 0.3, 1]
       }}
     >
       {/* HUD Frame */}
       <div className="relative border-l-2 border-white/10 pl-6 py-2 group hover:border-neon-cyan/50 transition-colors duration-500">
-        
+
         {/* Active Marker */}
         <div className="absolute left-[-2.5px] top-0 h-0 w-[3px] bg-neon-cyan group-hover:h-full transition-all duration-500 ease-in-out" />
-        
+
         {/* Header */}
         <div className="flex items-center gap-3 mb-2">
-           <span className="font-mono text-[10px] text-neon-cyan/60 tracking-widest">{role.code}</span>
-           <div className="h-px w-8 bg-white/10 group-hover:bg-neon-cyan/30 transition-colors" />
+          <span className="font-mono text-[10px] text-neon-cyan/60 tracking-widest">{role.code}</span>
+          <div className="h-px w-8 bg-white/10 group-hover:bg-neon-cyan/30 transition-colors" />
         </div>
 
         {/* Title */}
         <div className="mb-2">
-          <FocusReveal 
-            text={role.name} 
+          <FocusReveal
+            text={role.name}
             className="font-display text-2xl text-white font-bold group-hover:text-neon-cyan transition-colors"
             delay={index * 0.15 + 0.2}
             blurStrength={8}
           />
         </div>
-        
+
         {/* Description */}
         <div className="mb-4 max-w-md">
-          <FocusReveal 
+          <FocusReveal
             text={role.description}
             className="font-sans text-sm text-gray-400"
             delay={index * 0.15 + 0.4}
@@ -130,10 +130,10 @@ export const SkillsSection = () => {
 
   return (
     <section id="skills" ref={sectionRef} className="section relative min-h-screen py-32 px-6 flex items-center">
-      <ContextualHUD 
-        title="CAPABILITIES" 
-        code="SYS.02" 
-        alignment="left" 
+      <ContextualHUD
+        title="CAPABILITIES"
+        code="SYS.02"
+        alignment="left"
         className="hidden md:block"
       />
 
@@ -153,7 +153,7 @@ export const SkillsSection = () => {
             </span>
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-white tracking-tight">
-            <IntelligentText 
+            <IntelligentText
               type="heading"
               hasVisited={!isFirstVisit}
               delay={0.4}
@@ -165,19 +165,19 @@ export const SkillsSection = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24">
           {roles.map((role, index) => (
-            <RoleModulePanel 
-              key={index} 
-              role={role} 
-              index={index} 
+            <RoleModulePanel
+              key={index}
+              role={role}
+              index={index}
               isInView={isInView}
             />
           ))}
         </div>
       </div>
-      
+
       {/* Background Grid Accent */}
-      <div className="section-parallax-layer absolute inset-0 pointer-events-none opacity-[0.03]" 
-           style={{ backgroundImage: 'linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} 
+      <div className="section-parallax-layer absolute inset-0 pointer-events-none opacity-[0.03]"
+        style={{ backgroundImage: 'linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }}
       />
     </section>
   );

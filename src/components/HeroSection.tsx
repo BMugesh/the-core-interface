@@ -143,7 +143,7 @@ export const HeroSection = () => {
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.8, delay: 3.2 }}
       >
-        <MagneticButton 
+        <MagneticButton
           strength={0.4}
           className="cursor-pointer"
           onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
