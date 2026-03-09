@@ -4,7 +4,7 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 
 ## Project Overview
 
-This is a portfolio website project built with React + TypeScript + Vite, featuring an immersive sci-fi themed interface with cinematic animations. The project uses Lovable.dev as its primary development platform, which provides auto-commit on changes made through the Lovable interface.
+This is a portfolio website project built with React + TypeScript + Vite, featuring an immersive sci-fi themed interface with cinematic animations.
 
 **Tech Stack:**
 - **Framework:** React 18 with TypeScript
@@ -169,14 +169,11 @@ import { interactiveVariants, scrollVariants } from '@/lib/cinematic-motion'
 
 ## Git Workflow
 
-This project uses Lovable.dev:
-- Changes via Lovable are auto-committed
-- Manual commits should follow standard practices
+- Commits should follow standard practices
 - No special branch workflow required
 
 ## Important Notes
 
-- The development server uses `lovable-tagger` plugin in dev mode for component tracking
 - ESLint is configured but lenient (unused vars disabled)
 - The project includes extensive markdown documentation files (CINEMATIC_ENHANCEMENT_GUIDE.md, GSAP_SCROLL_CHOREOGRAPHY.md, etc.) - reference these for implementation details
 - All routes must be added ABOVE the catch-all route in `App.tsx`
