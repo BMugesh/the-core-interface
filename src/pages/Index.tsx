@@ -7,6 +7,7 @@ import { ParticleBackground } from '@/components/ParticleBackground';
 import { HUDNavigation } from '@/components/HUDNavigation';
 import { CursorEffects } from '@/components/CursorEffects';
 import { HeroSection } from '@/components/HeroSection';
+import { Logo } from '@/components/Logo';
 import { AboutSection } from '@/components/AboutSection';
 import { SkillsSection } from '@/components/SkillsSection';
 import { ProjectsSection } from '@/components/ProjectsSection';
@@ -38,6 +39,7 @@ const Index = () => {
           <CursorEffects />
           <ParticleBackground />
           <HUDNavigation />
+          <Logo />
 
           {/* Section interconnection visuals */}
           <SectionInterconnections />
