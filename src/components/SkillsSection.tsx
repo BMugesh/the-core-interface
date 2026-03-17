@@ -1,7 +1,7 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef, useEffect } from 'react';
 import { useVisitedSections } from '../hooks/useVisitedSections';
-import { ContextualHUD } from './ContextualHUD';
+
 import { FocusReveal } from './FocusReveal';
 import { IntelligentText } from './IntelligentText';
 
@@ -130,12 +130,6 @@ export const SkillsSection = () => {
 
   return (
     <section id="skills" ref={sectionRef} className="section relative min-h-screen py-32 px-6 flex items-center">
-      <ContextualHUD
-        title="CAPABILITIES"
-        code="SYS.02"
-        alignment="left"
-        className="hidden md:block"
-      />
 
       <div className="max-w-5xl mx-auto w-full relative z-10">
         {/* Section header */}
