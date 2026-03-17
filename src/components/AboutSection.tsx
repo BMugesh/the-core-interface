@@ -2,7 +2,7 @@ import { motion, useInView } from 'framer-motion';
 import { useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { useVisitedSections } from '../hooks/useVisitedSections';
-import { ContextualHUD } from './ContextualHUD';
+
 import { IntelligentText } from './IntelligentText';
 
 // Scan-line text reveal for classified data
