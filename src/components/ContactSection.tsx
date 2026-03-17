@@ -128,9 +128,6 @@ export const ContactSection = () => {
               transition={{ duration: 0.8, delay: isFirstVisit ? 0.2 : 0 }}
               style={{ transformOrigin: 'left' }}
             />
-            <span className="font-mono text-xs text-neon-cyan tracking-[0.3em] uppercase">
-              HANDSHAKE // PROTOCOL
-            </span>
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-bold text-white tracking-tight">
             <IntelligentText 

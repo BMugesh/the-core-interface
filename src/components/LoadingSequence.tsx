@@ -45,7 +45,7 @@ export const LoadingSequence = ({ onComplete }: LoadingSequenceProps) => {
   const [nameDecoded, setNameDecoded] = useState(false);
   const [enteringWorldVisible, setEnteringWorldVisible] = useState(false);
   const [cameraProgress, setCameraProgress] = useState(0);
-  const timersRef = useRef<NodeJS.Timeout[]>([]);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const cameraAnimationRef = useRef<number | null>(null);
   const cameraStartTimeRef = useRef<number | null>(null);
 
