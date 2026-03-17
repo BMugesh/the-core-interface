@@ -1,7 +1,7 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef, useState, useEffect } from 'react';
 import gsap from 'gsap';
-import { ContextualHUD } from './ContextualHUD';
+
 import { useVisitedSections } from '../hooks/useVisitedSections';
 import { FocusReveal } from './FocusReveal';
 import { IntelligentText } from './IntelligentText';
