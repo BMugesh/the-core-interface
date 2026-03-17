@@ -109,12 +109,6 @@ export const AchievementsSection = () => {
 
   return (
     <section id="achievements" ref={sectionRef} className="section relative min-h-[60vh] flex items-center py-32 px-6">
-      <ContextualHUD 
-        title="SIGNALS" 
-        code="SYS.04" 
-        alignment="left" 
-        className="hidden md:block"
-      />
 
       <div className="max-w-4xl mx-auto w-full relative z-10">
         {/* Section header */}

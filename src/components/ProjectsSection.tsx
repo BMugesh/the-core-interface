@@ -157,12 +157,6 @@ export const ProjectsSection = () => {
 
   return (
     <section id="projects" ref={sectionRef} className="section relative min-h-screen py-32 px-6">
-      <ContextualHUD
-        title="PROTOCOLS"
-        code="SYS.03"
-        alignment="right"
-        className="hidden md:block"
-      />
 
       <div className="max-w-6xl mx-auto relative z-10">
         {/* Section header */}

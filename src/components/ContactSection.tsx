@@ -111,11 +111,6 @@ export const ContactSection = () => {
 
   return (
     <section id="contact" ref={sectionRef} className="section relative min-h-[60vh] flex items-center justify-center py-20 px-6 overflow-hidden">
-      <ContextualHUD 
-        title="SYSTEM_HANDOFF" 
-        code="SYS.05" 
-        alignment="right"
-      />
 
       <div className="max-w-3xl w-full mx-auto relative z-10">
         {/* Section header */}

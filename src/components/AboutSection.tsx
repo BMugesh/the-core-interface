@@ -64,13 +64,6 @@ export const AboutSection = () => {
   return (
     <section id="about" ref={sectionRef} className="section relative min-h-screen flex items-center justify-center py-32 px-6 overflow-hidden">
       
-      {/* Contextual HUD */}
-      <ContextualHUD 
-        title="NEURAL_ARCH" 
-        code="SYS.01" 
-        alignment="left" 
-        className="hidden md:block"
-      />
 
       <div className="camera-target max-w-4xl mx-auto relative z-10" data-parallax-speed="0.8">
         {/* Section header */}
