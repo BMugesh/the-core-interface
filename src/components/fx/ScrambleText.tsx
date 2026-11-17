@@ -19,29 +19,36 @@ export const ScrambleText: React.FC<ScrambleTextProps> = ({
   className = '',
   as: Tag = 'span',
   triggerOnView = true,
-  speedMs = 28,
+  speedMs = 24,
 }) => {
   const { reducedMotion } = useSystem();
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-40px' });
   const [display, setDisplay] = useState(text);
-  const hasPlayed = useRef(false);
+  const completedRef = useRef(false);
+
+  const shouldPlay = triggerOnView ? isInView : true;
 
   useEffect(() => {
-    if (reducedMotion) {
+    if (reducedMotion || completedRef.current) {
       setDisplay(text);
       return;
     }
-    if (triggerOnView && !isInView) return;
-    if (hasPlayed.current) return;
-    hasPlayed.current = true;
+    if (!shouldPlay) return;
 
     let frame = 0;
-    const totalFrames = Math.max(12, text.length * 2);
+    const totalFrames = Math.max(14, text.length * 2);
 
     const interval = window.setInterval(() => {
       frame += 1;
       const revealCount = Math.floor((frame / totalFrames) * text.length);
+
+      if (frame >= totalFrames) {
+        completedRef.current = true;
+        setDisplay(text);
+        window.clearInterval(interval);
+        return;
+      }
 
       const scrambled = text
         .split('')
@@ -53,15 +60,15 @@ export const ScrambleText: React.FC<ScrambleTextProps> = ({
         .join('');
 
       setDisplay(scrambled);
-
-      if (frame >= totalFrames) {
-        setDisplay(text);
-        window.clearInterval(interval);
-      }
     }, speedMs);
 
-    return () => window.clearInterval(interval);
-  }, [text, isInView, triggerOnView, reducedMotion, speedMs]);
+    return () => {
+      window.clearInterval(interval);
+      if (completedRef.current) {
+        setDisplay(text);
+      }
+    };
+  }, [text, shouldPlay, reducedMotion, speedMs]);
 
   return (
     <span ref={ref} className="inline-block">

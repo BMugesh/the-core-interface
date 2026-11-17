@@ -47,7 +47,7 @@ export const ProgressXP: React.FC = () => {
             : '0 0 10px rgba(0, 229, 255, 0.85)',
         }}
       />
-      <div className="hidden sm:flex fixed top-2 right-3 items-center gap-1.5 px-2 py-0.5 bg-bg/90 border border-cyan-sys/40 font-mono text-[10px] tracking-widest text-cyan-sys">
+      <div className="hidden sm:flex fixed bottom-3 right-3 items-center gap-1.5 px-2.5 py-1 bg-bg/90 border border-cyan-sys/40 font-mono text-[10px] tracking-widest text-cyan-sys">
         <span>SYNC RATE</span>
         <span className="font-bold text-ink">{Math.round(progress)}%</span>
       </div>

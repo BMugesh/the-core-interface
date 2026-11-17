@@ -28,12 +28,11 @@ export const CountUp: React.FC<CountUpProps> = ({
   const doneRef = useRef(false);
 
   useEffect(() => {
-    if (reducedMotion) {
+    if (reducedMotion || doneRef.current) {
       setVal(target);
       return;
     }
-    if (!isInView || doneRef.current) return;
-    doneRef.current = true;
+    if (!isInView) return;
 
     const start = performance.now();
     let rafId = 0;
@@ -41,13 +40,13 @@ export const CountUp: React.FC<CountUpProps> = ({
     const tick = (now: number) => {
       const elapsed = now - start;
       const progress = Math.min(1, elapsed / durationMs);
-      // Ease out cubic
       const eased = 1 - Math.pow(1 - progress, 3);
       setVal(Math.round(eased * target));
 
       if (progress < 1) {
         rafId = requestAnimationFrame(tick);
       } else {
+        doneRef.current = true;
         setVal(target);
         if (hitStopId) triggerHitStop(hitStopId);
       }
