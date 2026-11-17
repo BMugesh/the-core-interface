@@ -1,0 +1,68 @@
+[
+  {
+    "id": "identity",
+    "topic": "Identity, Education, and Contact",
+    "tags": ["name", "who", "bala", "mugesh", "contact", "email", "phone", "education", "college", "cgpa", "degree", "class", "role", "hire"],
+    "content": "BALA MUGESH M K is a Forward Deployed AI Engineer pursuing B.E. (EEE) at Sri Eshwar College of Engineering (2023–2027) with a CGPA of 7.6. Contact email: balamugesh.mk2023eee@sece.ac.in, phone: 8778848565, GitHub: https://github.com/BMugesh. He has solved 150+ LeetCode problems (DSA)."
+  },
+  {
+    "id": "exp-appxcess",
+    "topic": "Internship: Software Development Intern at Appxcess Technologies",
+    "tags": ["appxcess", "internship", "experience", "work", "fastapi", "websocket", "aws", "ec2", "pmt", "a2f", "chat", "2026"],
+    "content": "At Appxcess Technologies (June–July 2026), Bala Mugesh served as a Software Development Intern. He built FastAPI backend APIs, WebSocket-based real-time communication, managed deployments on AWS EC2, and collaborated on enterprise projects including PMT, A2F, and a scalable chat platform."
+  },
+  {
+    "id": "exp-codebooster",
+    "topic": "Internship: AI Agent Intern at CODEBOOSTER",
+    "tags": ["codebooster", "internship", "experience", "ai", "agent", "langchain", "rag", "vector", "embeddings", "json", "tool", "hallucination", "2025"],
+    "content": "At CODEBOOSTER (July 2025), Bala Mugesh worked as an AI Agent Intern. He built autonomous LLM agents using LangChain and Python with structured JSON outputs and multi-step tool calling to automate internal backend workflows. He built a semantic retrieval (RAG) pipeline with dense embeddings and a vector database to ground agent responses and reduce hallucinations, integrated agent endpoints with existing REST APIs, and added automated validation checks for reliable multi-turn task execution."
+  },
+  {
+    "id": "exp-rvtech",
+    "topic": "Internship: MERN Stack Intern at RV TECH",
+    "tags": ["rv tech", "rvtech", "mern", "mongodb", "express", "react", "node", "rest", "internship", "2025"],
+    "content": "At RV TECH (January 2025), Bala Mugesh was a MERN Stack Intern. He built scalable web applications with MongoDB, Express.js, React.js, and Node.js, and developed RESTful APIs for client-server communication."
+  },
+  {
+    "id": "proj-rio",
+    "topic": "Project: R.I.O. – Personal AI Runtime & Autonomous Agent System",
+    "tags": ["rio", "r.i.o.", "runtime", "agent", "autonomous", "python", "groq", "whisper", "stt", "dag", "rtx 4050", "cuda", "pytorch", "tests", "300+", "permission", "voice"],
+    "content": "R.I.O. (2025) is Bala Mugesh's Personal AI Runtime & Autonomous Agent System in Python. It converts natural-language and voice goals into structured execution plans using LLM task reasoning, DAG orchestration, tool routing, verification, and failure recovery. Stack: Groq LLMs, Whisper STT, FastAPI, WebSockets, PyTorch, CUDA. It supports persistent voice interaction and multi-step computer automation with permission boundaries between AI reasoning and OS execution, plus adaptive routing across remote LLMs and a local RTX 4050 GPU with resource-aware parallel execution and evidence-based verification. It is validated with 300+ automated and live acceptance tests, including LLM output-quality and hallucination checks."
+  },
+  {
+    "id": "proj-pmt",
+    "topic": "Project: PMT Analytics Dashboard – Appxcess Technologies",
+    "tags": ["pmt", "analytics", "dashboard", "appxcess", "flask", "fastapi", "nextjs", "sql", "cte", "power bi", "93%", "70%", "50+", "stakeholders", "2026"],
+    "content": "PMT Analytics Dashboard (2026) at Appxcess Technologies replaced a spreadsheet-based reporting process with a Python analytics backend (Flask, FastAPI microservices) and a Next.js frontend. Report turnaround was cut from two days to three hours (93% reduction), and manual reporting effort was cut by roughly 70%. It features optimized SQL with CTEs, window functions, aggregations, and joins, powering a real-time Power BI dashboard used by 50+ internal stakeholders."
+  },
+  {
+    "id": "proj-consensusiq",
+    "topic": "Project: ConsensusIQ – Multi-Device AI Visual Inspection System",
+    "tags": ["consensusiq", "qualcomm", "snapdragon", "multiverse", "hackathon", "yolo", "yolov11n", "vision", "inspection", "33000", "62000", "synthetic", "edge", "fastapi", "react", "2026"],
+    "content": "ConsensusIQ (2026) is a distributed multi-device AI visual inspection system built for Qualcomm's Snapdragon Multiverse Hackathon, splitting inference across edge and telemetry nodes. YOLOv11n was trained on 33,000+ synthetic images containing 62,000+ defects, with live results streamed to a FastAPI + React dashboard."
+  },
+  {
+    "id": "proj-resolvetrace",
+    "topic": "Project: ResolveTrace – Historical Support Playbook",
+    "tags": ["resolvetrace", "support", "playbook", "spotifycares", "twitter", "28k", "1545", "pathways", "tfidf", "rag", "0.590", "0.524", "11.8%", "5.0%", "212", "19", "drift", "jensen-shannon", "streamlit", "fastapi"],
+    "content": "ResolveTrace (2026) mines Condition → Action → Outcome decision pathways from 28K+ reconstructed support conversations (SpotifyCares Twitter data), producing 1,545 pathways and a 3-state decision engine (auto-handle, escalate, unknown). Its hybrid matcher (TF-IDF retrieval + structured state compatibility) was benchmarked against a semantic RAG baseline on 212 gold test cases: pathway accuracy improved to 0.590 vs 0.524, and false auto-handling was reduced from 11.8% to 5.0%. It includes drift monitoring (rolling Jensen-Shannon divergence), LLM-judge + human-annotated reply-quality evaluation, FastAPI + Streamlit UI, and 19 unit tests."
+  },
+  {
+    "id": "hackathons",
+    "topic": "Hackathons & Achievements",
+    "tags": ["hackathon", "sih", "smart india", "bel", "drones", "birds", "micro-doppler", "cognizant", "technoverse", "raspberry pi", "resnet", "snapdragon", "qualcomm", "noida", "arduino", "finalist", "semi-finalist", "awards", "titles"],
+    "content": "Bala Mugesh's hackathon results: (1) Finalist at Smart India Hackathon (SIH) 2024: built a micro-doppler effect-based Birds vs Drones classifier for Bharat Electronics Limited (BEL) for real-time aerial object classification in defence. (2) Semi-Finalist at Cognizant Technoverse National Hackathon 2026: shortlisted nationally for an Edge-AI defect detection system (Raspberry Pi 5 + ResNet-50) under severe time constraints. (3) Finalist at Snapdragon Multiverse Hackathon (Qualcomm), Noida, 2026: one of a limited number of teams selected to build a multi-device AI solution using Snapdragon AI PC, Arduino UNO Q, and Qualcomm AI Cloud 100."
+  },
+  {
+    "id": "skills-certs",
+    "topic": "Technical Skills & Certifications",
+    "tags": ["skills", "stack", "python", "c++", "pytorch", "langchain", "groq", "autogen", "onnx", "tflite", "docker", "vercel", "certifications", "udemy", "cisco", "leetcode", "150+"],
+    "content": "Skills — Agents & LLMs: LangChain, Groq, AutoGen, RAG, Prompt Engineering, System-Level Task Automation. Languages: Python (Advanced), C++. Problem Solving: 150+ LeetCode problems (DSA). AI/ML & CV: PyTorch, Scikit-learn, CNNs (ResNet-50, YOLOv11n), Transformers, Object Detection, Synthetic Data Generation, NLP, Embeddings, semantic search, tool calling, structured outputs. Systems/Edge/Hardware: AWS EC2, ONNX, TFLite Quantization, Snapdragon AI PC, Raspberry Pi 5, Arduino UNO Q, Qualcomm AI Hub. Backend: FastAPI, Flask, Node.js, SQL, Vector Databases, REST APIs, WebSockets, Next.js, React. Tools: Git, GitHub, AWS EC2, Jupyter, Vercel, Netlify, Docker. Certifications: Generative AI and AI for Leaders (Udemy), Prompt Engineering (Udemy), The Complete JavaScript Course: From Zero to Expert (Udemy), Data Science Essentials with Python (Cisco)."
+  },
+  {
+    "id": "why-hire",
+    "topic": "Why Hire Bala Mugesh (Evidence Summary)",
+    "tags": ["why", "hire", "strengths", "summary", "impact", "recruiter", "fit", "forward deployed"],
+    "content": "Bala Mugesh combines forward-deployed production delivery with deep AI systems engineering: he cut enterprise reporting turnaround by 93% (2 days to 3 hours) and manual effort by ~70% for 50+ stakeholders at Appxcess; engineered R.I.O., a Python autonomous agent runtime verified by 300+ tests with OS permission boundaries and hybrid Groq/RTX 4050 routing; built ResolveTrace cutting false auto-handling from 11.8% to 5.0% over a RAG baseline (0.590 vs 0.524 accuracy); and proved edge-AI execution as a Finalist at SIH 2024 (BEL) and Qualcomm Snapdragon Multiverse 2026, plus Semi-Finalist at Cognizant Technoverse 2026."
+  }
+]
