@@ -1,9 +1,15 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import type { MascotState } from '@/lib/motionPrefs';
 import { useSystem } from '@/lib/motionPrefs';
+
+const RioRiveCanvas = dynamic(() => import('./RioRiveCanvas'), {
+  ssr: false,
+  loading: () => null,
+});
 
 interface RioMascotProps {
   state?: MascotState;
@@ -21,6 +27,27 @@ export const RioMascot: React.FC<RioMascotProps> = ({
   const { reducedMotion } = useSystem();
   const [lookOffset, setLookOffset] = useState({ x: 0, y: 0 });
   const [scrollTilt, setScrollTilt] = useState(0);
+  const [riveAvailable, setRiveAvailable] = useState(false);
+  const [riveLoaded, setRiveLoaded] = useState(false);
+
+  // Probe whether /mascot/rio.riv has been published via Rive CLI
+  useEffect(() => {
+    if (reducedMotion) {
+      setRiveAvailable(false);
+      return;
+    }
+    let cancelled = false;
+    fetch('/mascot/rio.riv', { method: 'HEAD' })
+      .then((res) => {
+        if (!cancelled && res.ok) setRiveAvailable(true);
+      })
+      .catch(() => {
+        if (!cancelled) setRiveAvailable(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [reducedMotion]);
 
   useEffect(() => {
     if (!interactive || reducedMotion) return;
@@ -29,7 +56,7 @@ export const RioMascot: React.FC<RioMascotProps> = ({
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       const delta = currentScrollY - lastScrollY;
-      setScrollTilt(Math.max(-8, Math.min(8, delta * 0.15)));
+      setScrollTilt(Math.max(-6, Math.min(6, delta * 0.12)));
       lastScrollY = currentScrollY;
     };
 
@@ -53,256 +80,216 @@ export const RioMascot: React.FC<RioMascotProps> = ({
     };
   }, [interactive, reducedMotion]);
 
-  // Expression colors and visor matrix based on state
   const visorColors = {
     idle: {
       primary: '#00e5ff',
-      glow: 'rgba(0, 229, 255, 0.65)',
-      halo: 'rgba(0, 229, 255, 0.25)',
-      tag: 'IDLE // READY',
+      glow: 'rgba(0, 229, 255, 0.7)',
+      halo: 'rgba(0, 229, 255, 0.2)',
     },
     thinking: {
       primary: '#ff2bd6',
       glow: 'rgba(255, 43, 214, 0.8)',
-      halo: 'rgba(255, 43, 214, 0.3)',
-      tag: 'PROCESSING // RAG',
+      halo: 'rgba(255, 43, 214, 0.25)',
     },
     alert: {
       primary: '#ffb300',
       glow: 'rgba(255, 179, 0, 0.85)',
-      halo: 'rgba(255, 179, 0, 0.35)',
-      tag: 'TACTICAL // ALERT',
+      halo: 'rgba(255, 179, 0, 0.28)',
     },
     celebrate: {
       primary: '#00ffc4',
       glow: 'rgba(0, 255, 196, 0.9)',
-      halo: 'rgba(0, 255, 196, 0.4)',
-      tag: 'QUEST // CLEARED',
+      halo: 'rgba(0, 255, 196, 0.3)',
     },
   }[state];
+
+  const showRive = riveAvailable && !reducedMotion;
 
   return (
     <div
       className={`relative inline-flex flex-col items-center select-none ${className}`}
-      style={{ width: size, height: size * 1.15 }}
+      style={{ width: size }}
       aria-label={`R.I.O. AI Companion Status: ${state}`}
     >
-      <motion.div
-        animate={
-          reducedMotion
-            ? false
-            : {
-                y: [0, -6, 0],
-                rotate: scrollTilt,
-              }
-        }
-        transition={{
-          y: { duration: 3.5, repeat: Infinity, ease: 'easeInOut' },
-          rotate: { duration: 0.2, ease: 'easeOut' },
-        }}
-        className="relative w-full h-full flex items-center justify-center"
+      <div
+        className="relative flex items-center justify-center"
+        style={{ width: size, height: size }}
       >
-        <svg
-          viewBox="0 0 160 180"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-full h-full filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.85)]"
-        >
-          <defs>
-            {/* Outer Holo Halo Glow */}
-            <radialGradient id="holoGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor={visorColors.halo} />
-              <stop offset="100%" stopColor="transparent" />
-            </radialGradient>
-
-            {/* Cyber Armor Plate Gradients */}
-            <linearGradient id="hoodOuter" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#121626" />
-              <stop offset="50%" stopColor="#0b0e1b" />
-              <stop offset="100%" stopColor="#05060b" />
-            </linearGradient>
-
-            <linearGradient id="hoodInner" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#05060d" />
-              <stop offset="100%" stopColor="#020306" />
-            </linearGradient>
-
-            <linearGradient id="armorPlates" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#1e263d" />
-              <stop offset="50%" stopColor="#141a2c" />
-              <stop offset="100%" stopColor="#0d111d" />
-            </linearGradient>
-          </defs>
-
-          {/* Background Ambient Holo Field */}
-          <circle cx="80" cy="85" r="72" fill="url(#holoGlow)" />
-
-          {/* Outer Cyber Hood Silhouette (Hard Cel-Shaded Facets) */}
-          <path
-            d="M 80 14 L 126 36 L 140 82 L 132 134 L 110 160 L 50 160 L 28 134 L 20 82 L 34 36 Z"
-            fill="url(#hoodOuter)"
-            stroke="#000000"
-            strokeWidth="3.5"
-          />
-
-          {/* Crest Crest Plate */}
-          <polygon
-            points="80,18 96,38 80,48 64,38"
-            fill="url(#armorPlates)"
-            stroke={visorColors.primary}
-            strokeWidth="1.5"
-          />
-
-          {/* Outer Edge Accent Lines */}
-          <path
-            d="M 34 36 L 48 86 L 38 126"
-            stroke="rgba(255,255,255,0.15)"
-            strokeWidth="1.5"
-          />
-          <path
-            d="M 126 36 L 112 86 L 122 126"
-            stroke="rgba(255,255,255,0.15)"
-            strokeWidth="1.5"
-          />
-
-          {/* Dark Inner Hood Cavity */}
-          <path
-            d="M 80 34 L 118 52 L 124 92 L 108 132 L 52 132 L 36 92 L 42 52 Z"
-            fill="url(#hoodInner)"
-            stroke="#000000"
-            strokeWidth="3"
-          />
-
-          {/* Collar Armor Mantle */}
-          <path
-            d="M 46 132 L 80 148 L 114 132 L 126 156 L 80 170 L 34 156 Z"
-            fill="url(#armorPlates)"
-            stroke="#000000"
-            strokeWidth="2.5"
-          />
-          <line
-            x1="80"
-            y1="148"
-            x2="80"
-            y2="170"
-            stroke={visorColors.primary}
-            strokeWidth="2"
-          />
-
-          {/* The Holo Visor Chamber */}
-          <g transform={`translate(${lookOffset.x}, ${lookOffset.y})`}>
-            {/* Hex Visor Base Shield */}
-            <polygon
-              points="52,72 108,72 116,98 80,112 44,98"
-              fill="#060913"
-              stroke={visorColors.primary}
-              strokeWidth="2"
-              style={{ filter: `drop-shadow(0 0 8px ${visorColors.glow})` }}
+        {/* Live Rive State Machine Canvas (renders when /public/mascot/rio.riv is published) */}
+        {showRive && (
+          <div
+            className={`absolute inset-0 z-10 transition-opacity duration-200 ${
+              riveLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <RioRiveCanvas
+              state={state}
+              onReady={() => setRiveLoaded(true)}
+              onFallback={() => {
+                setRiveAvailable(false);
+                setRiveLoaded(false);
+              }}
             />
+          </div>
+        )}
 
-            {/* Visor Scanline Texture */}
-            <line x1="50" y1="79" x2="110" y2="79" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-            <line x1="48" y1="87" x2="112" y2="87" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-            <line x1="52" y1="95" x2="108" y2="95" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+        {/* Synchronized Vector Twin / Instant SSR & Reduced-Motion Fallback */}
+        {(!showRive || !riveLoaded) && (
+          <motion.div
+            animate={
+              reducedMotion
+                ? false
+                : {
+                    y: [0, -6, 0],
+                    rotate: scrollTilt,
+                  }
+            }
+            transition={{
+              y: { duration: 3.2, repeat: Infinity, ease: 'easeInOut' },
+              rotate: { duration: 0.2, ease: 'easeOut' },
+            }}
+            className="relative w-full h-full flex items-center justify-center"
+          >
+            <svg
+              viewBox="0 0 200 200"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-full h-full filter drop-shadow-[0_10px_18px_rgba(0,0,0,0.85)]"
+            >
+              {/* Rotating Octagonal Holo Halo */}
+              <polygon
+                points="100,12 162,38 188,100 162,162 100,188 38,162 12,100 38,38"
+                fill={visorColors.halo}
+                stroke={visorColors.primary}
+                strokeOpacity="0.4"
+                strokeWidth="1.5"
+              />
 
-            {/* Expression-Driven Optical Visor Matrix */}
-            {state === 'idle' && (
-              <g>
-                {/* Twin Cyan Optical Bars */}
-                <rect
-                  x="60"
-                  y="84"
-                  width="16"
-                  height="5"
-                  rx="1"
-                  fill={visorColors.primary}
-                  style={{ filter: `drop-shadow(0 0 6px ${visorColors.primary})` }}
-                />
-                <rect
-                  x="84"
-                  y="84"
-                  width="16"
-                  height="5"
-                  rx="1"
-                  fill={visorColors.primary}
-                  style={{ filter: `drop-shadow(0 0 6px ${visorColors.primary})` }}
-                />
-                <circle cx="80" cy="98" r="2.5" fill={visorColors.primary} />
-              </g>
-            )}
+              {/* Floating Wing Shards */}
+              <polygon points="24,82 30,100 24,118 20,100" fill={visorColors.primary} />
+              <polygon points="176,82 180,100 176,118 170,100" fill={visorColors.primary} />
 
-            {state === 'thinking' && (
-              <g>
-                {/* Orbiting / Rotating Matrix */}
-                <circle
-                  cx="80"
-                  cy="88"
-                  r="12"
+              {/* Outer Cel-Shaded Cyber Hood */}
+              <path
+                d="M 100 28 L 152 55 L 164 106 L 152 152 L 130 168 L 70 168 L 48 152 L 36 106 L 48 55 Z"
+                fill="#10172b"
+                stroke="#000000"
+                strokeWidth="3.5"
+                strokeLinejoin="bevel"
+              />
+
+              {/* Inner Abyss Shadow */}
+              <path
+                d="M 100 52 L 142 72 L 148 114 L 130 146 L 70 146 L 52 114 L 58 72 Z"
+                fill="#04060d"
+                stroke="#000000"
+                strokeWidth="3"
+                strokeLinejoin="bevel"
+              />
+
+              {/* Crest Diamond */}
+              <polygon
+                points="100,34 112,52 100,62 88,52"
+                fill="#141e36"
+                stroke={visorColors.primary}
+                strokeWidth="1.8"
+              />
+
+              {/* Collar Armor Mantle + Glowing Core Seam */}
+              <path
+                d="M 65 144 L 100 158 L 135 144 L 148 166 L 100 178 L 52 166 Z"
+                fill="#151e34"
+                stroke="#000000"
+                strokeWidth="2.8"
+                strokeLinejoin="bevel"
+              />
+              <rect x="98.5" y="156" width="3" height="19" rx="1" fill={visorColors.primary} />
+
+              {/* Visor Chamber & Expressive Ocular Matrix */}
+              <g transform={`translate(${lookOffset.x}, ${lookOffset.y})`}>
+                <polygon
+                  points="67,82 133,82 139,103 100,119 61,103"
+                  fill="#050914"
                   stroke={visorColors.primary}
-                  strokeWidth="2"
-                  strokeDasharray="4 3"
-                  className="animate-spin origin-[80px_88px]"
-                  style={{ filter: `drop-shadow(0 0 8px ${visorColors.primary})` }}
+                  strokeWidth="2.2"
+                  strokeLinejoin="miter"
+                  style={{ filter: `drop-shadow(0 0 7px ${visorColors.glow})` }}
                 />
-                <polygon
-                  points="76,85 84,85 80,92"
-                  fill={visorColors.primary}
-                />
+
+                {state === 'idle' && (
+                  <g>
+                    <polygon
+                      points="74,92 94,94 92,100 76,99"
+                      fill={visorColors.primary}
+                      style={{ filter: `drop-shadow(0 0 5px ${visorColors.primary})` }}
+                    />
+                    <polygon
+                      points="126,92 106,94 108,100 124,99"
+                      fill={visorColors.primary}
+                      style={{ filter: `drop-shadow(0 0 5px ${visorColors.primary})` }}
+                    />
+                    <polygon points="100,104 104,108 100,112 96,108" fill={visorColors.primary} />
+                  </g>
+                )}
+
+                {state === 'thinking' && (
+                  <g>
+                    <polygon
+                      points="100,87 112,94 112,106 100,113 88,106 88,94"
+                      fill="none"
+                      stroke={visorColors.primary}
+                      strokeWidth="2.2"
+                      className="animate-spin origin-[100px_100px]"
+                      style={{ filter: `drop-shadow(0 0 7px ${visorColors.primary})` }}
+                    />
+                    <polygon points="95,97 105,97 100,105" fill={visorColors.primary} />
+                  </g>
+                )}
+
+                {state === 'alert' && (
+                  <g>
+                    <polygon
+                      points="73,90 94,97 92,102 72,96"
+                      fill={visorColors.primary}
+                      style={{ filter: `drop-shadow(0 0 7px ${visorColors.primary})` }}
+                    />
+                    <polygon
+                      points="127,90 106,97 108,102 128,96"
+                      fill={visorColors.primary}
+                      style={{ filter: `drop-shadow(0 0 7px ${visorColors.primary})` }}
+                    />
+                    <polygon points="100,104 104,108 100,112 96,108" fill="#ff1e38" />
+                  </g>
+                )}
+
+                {state === 'celebrate' && (
+                  <g>
+                    <polygon
+                      points="100,86 104,96 114,100 104,104 100,114 96,104 86,100 96,96"
+                      fill={visorColors.primary}
+                      style={{ filter: `drop-shadow(0 0 9px ${visorColors.primary})` }}
+                    />
+                    <circle cx="77" cy="98" r="2.2" fill="#ffffff" />
+                    <circle cx="123" cy="98" r="2.2" fill="#ffffff" />
+                  </g>
+                )}
               </g>
-            )}
-
-            {state === 'alert' && (
-              <g>
-                {/* Sharp Angled Optical Slits */}
-                <polygon
-                  points="58,82 76,87 74,92 56,87"
-                  fill={visorColors.primary}
-                  style={{ filter: `drop-shadow(0 0 8px ${visorColors.primary})` }}
-                />
-                <polygon
-                  points="102,82 84,87 86,92 104,87"
-                  fill={visorColors.primary}
-                  style={{ filter: `drop-shadow(0 0 8px ${visorColors.primary})` }}
-                />
-                <line x1="80" y1="84" x2="80" y2="98" stroke="#ff1e38" strokeWidth="2.5" />
-              </g>
-            )}
-
-            {state === 'celebrate' && (
-              <g>
-                {/* Radiant Starburst / Cleared Spark */}
-                <polygon
-                  points="80,78 84,85 92,88 84,91 80,98 76,91 68,88 76,85"
-                  fill={visorColors.primary}
-                  style={{ filter: `drop-shadow(0 0 10px ${visorColors.primary})` }}
-                />
-                <circle cx="62" cy="88" r="2" fill="#fff" />
-                <circle cx="98" cy="88" r="2" fill="#fff" />
-              </g>
-            )}
-          </g>
-
-          {/* Floating Cheek HUD Nodes */}
-          <circle cx="34" cy="100" r="2" fill={visorColors.primary} />
-          <circle cx="126" cy="100" r="2" fill={visorColors.primary} />
-        </svg>
-
-        {/* Floating Holographic Ring */}
-        <div
-          aria-hidden="true"
-          className="absolute -bottom-1 w-20 h-3 border border-dashed rounded-full pointer-events-none opacity-40 animate-pulse"
-          style={{ borderColor: visorColors.primary }}
-        />
-      </motion.div>
+            </svg>
+          </motion.div>
+        )}
+      </div>
 
       {/* R.I.O. Status HUD Tag */}
-      <div className="mt-1 flex items-center gap-1.5 px-2 py-0.5 bg-black/80 border border-white/10 font-mono text-[9px] tracking-widest uppercase">
+      <div className="mt-2 flex items-center gap-1.5 px-2.5 py-0.5 bg-black/85 border border-white/15 font-mono text-[10px] tracking-widest uppercase">
         <span
-          className="w-1.5 h-1.5 rounded-full animate-ping"
+          className="w-1.5 h-1.5 rounded-full animate-pulse"
           style={{ backgroundColor: visorColors.primary }}
         />
         <span style={{ color: visorColors.primary }}>R.I.O.</span>
-        <span className="text-ink-dim">[{state.toUpperCase()}]</span>
+        <span className="text-ink-dim">
+          [{state.toUpperCase()}
+          {riveLoaded ? ' · RIVE' : ''}]
+        </span>
       </div>
     </div>
   );
