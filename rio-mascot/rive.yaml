@@ -4,3 +4,6 @@ output:
 logs:
   file: build/rive.log
   problems: build/problems.log
+push:
+  projectId: 2059726
+  fileId: 2734394
