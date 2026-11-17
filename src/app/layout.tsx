@@ -3,6 +3,8 @@ import { Anton, Inter, JetBrains_Mono, Noto_Sans_JP } from 'next/font/google';
 import './globals.css';
 import { SystemProvider } from '@/lib/motionPrefs';
 import { LenisProvider } from '@/lib/lenis';
+import { RioChatModal } from '@/components/chat/RioChatModal';
+import { SystemTerminal } from '@/components/chat/SystemTerminal';
 
 const anton = Anton({
   weight: '400',
@@ -89,7 +91,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           SKIP TO CONTENT
         </a>
         <SystemProvider>
-          <LenisProvider>{children}</LenisProvider>
+          <LenisProvider>
+            {children}
+            <RioChatModal />
+            <SystemTerminal />
+          </LenisProvider>
         </SystemProvider>
       </body>
     </html>
